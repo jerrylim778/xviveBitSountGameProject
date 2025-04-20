@@ -16,7 +16,7 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
     public int pp_IDXArray => m_OutPutAudioEqulType switch
     { OPAEType.StickArrayType => m_StickArrayTRs.Length, _ => 18 };
 
-    private float[] targetHeights, currentHeights; // ºÎµå·¯¿î ¾Ö´Ï¸ÞÀÌ¼ÇÀ» À§ÇÑ º¯¼ö
+    private float[] targetHeights, currentHeights; // ï¿½Îµå·¯ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     public override void Initlization(ModuleMonoBase _MainModuleBase, params object[] _OtherParams)
     {
@@ -49,7 +49,7 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
         
         for (int i = 0; i < pp_IDXArray; i++)
         {
-            // ºÎµå·¯¿î ¾Ö´Ï¸ÞÀÌ¼Ç Àû¿ë
+            // ï¿½Îµå·¯ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
             currentHeights[i] = Mathf.Lerp(currentHeights[i], targetHeights[i], Time.deltaTime * m_LerpSped);
 
 
@@ -64,7 +64,7 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
             {
                 if (m_StickArrayTRs[i] == null) continue;
 
-                // UI ¸·´ë Å©±â ¾÷µ¥ÀÌÆ®
+                // UI ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
                 Vector3 size = m_StickArrayTRs[i].localScale;
                 size.y = Mathf.Clamp(currentHeights[i], 1f, m_MaxCliping);
                 m_StickArrayTRs[i].localScale = size;

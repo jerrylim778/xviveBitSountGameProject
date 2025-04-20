@@ -6,12 +6,12 @@ using System;
 
 public class AudioMixVisualizeSubController : SubModuleControllerBase
 {
-    // ¹Í½Ì ¹æ½Ä ¿­°ÅÇü
+    // ï¿½Í½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public enum MixingMethod
     {
-        Sum,        // ¸ðµç ¿Àµð¿À ¼Ò½º ½ºÆåÆ®·³ÀÇ ÇÕ
-        Average,    // ¸ðµç ¿Àµð¿À ¼Ò½º ½ºÆåÆ®·³ÀÇ Æò±Õ
-        Maximum     // °¢ ÁÖÆÄ¼ö ´ë¿ªÀÇ ÃÖ´ë°ª »ç¿ë
+        Sum,        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+        Average,    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+        Maximum     // ï¿½ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½ë¿ªï¿½ï¿½ ï¿½Ö´ë°ª ï¿½ï¿½ï¿½
     }
 
     [SerializeField, Range(0f, 20000f)] private float m_MaxFreq;
@@ -28,25 +28,25 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
     [Tooltip("Required Values")]
     [SerializeField, ReadOnly] private List<ElemASBuffer> audioSources = new();
 
-    [Tooltip("FFT À©µµ¿ì À¯Çü")]
+    [Tooltip("FFT ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½")]
     public FFTWindow fftWindow = FFTWindow.BlackmanHarris;
 
-    [Tooltip("½ºÆåÆ®·³ Å©±â (2ÀÇ °ÅµìÁ¦°ö ±ÇÀå: 128, 256, 512, 1024, 2048)")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ Å©ï¿½ï¿½ (2ï¿½ï¿½ ï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: 128, 256, 512, 1024, 2048)")]
     public int spectrumSize = 512;
 
-    [Tooltip("¿Àµð¿À ¼Ò½º ¹Í½Ì ¹æ½Ä")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ ï¿½Í½ï¿½ ï¿½ï¿½ï¿½")]
     public MixingMethod mixingMethod = MixingMethod.Average;
 
-    [Tooltip("ÁÖÆÄ¼ö ´ë¿ª µð¹ö±ë Á¤º¸ Ç¥½Ã")]
+    [Tooltip("ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½ë¿ª ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½")]
     public bool showDebugInfo = false;
 
-    // °¢ ¿Àµð¿À ¼Ò½ºº° ½ºÆåÆ®·³ ÀúÀå¿ë ¹è¿­
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­
     private float[][] sourceSpectrums;
-    private float[] combinedSpectrum; // ÃÖÁ¾ ÇÕ»ê/¹Í½ÌµÈ ½ºÆåÆ®·³
+    private float[] combinedSpectrum; // ï¿½ï¿½ï¿½ï¿½ ï¿½Õ»ï¿½/ï¿½Í½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½
 
     public override object[] Initlization(params object[] _ParsingParams)
     {
-        var PartParams = Initlization(_ParsingParams);
+        var PartParams = base.Initlization(_ParsingParams);
 
         FindParentsObjTypeByTemp<SoundGameController>().I_CheckSubModuleIsAllCanAction(this);
         return null;
@@ -61,14 +61,14 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
 
     private void RecycleArrays()
     {
-        // ¿Àµð¿À ¼Ò½ºº° ½ºÆåÆ®·³ ¹è¿­ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½è¿­ ï¿½Ê±ï¿½È­
         sourceSpectrums = new float[audioSources.Count][];
         for (int i = 0; i < audioSources.Count; i++)
         {
             sourceSpectrums[i] = new float[spectrumSize];
         }
 
-        // ÇÕÃÄÁø ½ºÆåÆ®·³ ¹× ¾Ö´Ï¸ÞÀÌ¼Ç ¹è¿­ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½è¿­ ï¿½Ê±ï¿½È­
         combinedSpectrum = new float[spectrumSize];
         m_OutPutAudioEqulList.ForEach(x => x.ResetCycle());
     }
@@ -95,7 +95,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
                 source.m_AudioSource.Stop();
                 source.m_AudioSource.Play();
             }
-            // ¹è¿­ ÀçÃÊ±âÈ­
+            // ï¿½è¿­ ï¿½ï¿½ï¿½Ê±ï¿½È­
             RecycleArrays();
         }
     }
@@ -107,12 +107,12 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
         {
             audioSources.Remove(source);
             if(m_isTestMode) source.m_AudioSource.Stop();
-            // ¹è¿­ ÀçÃÊ±âÈ­
+            // ï¿½è¿­ ï¿½ï¿½ï¿½Ê±ï¿½È­
             RecycleArrays();
         }
     }
 
-    // ¹Í½Ì ¹æ½Ä º¯°æ
+    // ï¿½Í½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     public void SetMixingMethod(MixingMethod method) => mixingMethod = method;
     #endregion
 
@@ -120,7 +120,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
 
     private void GetAllSpectrumData()
     {
-        // °¢ ¿Àµð¿À ¼Ò½º¿¡¼­ ½ºÆåÆ®·³ µ¥ÀÌÅÍ °¡Á®¿À±â
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         for (int i = 0; i < audioSources.Count; i++)
         {
             if (audioSources[i] != null && audioSources[i].m_AudioSource.isPlaying)
@@ -128,7 +128,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
                 //audioSources[i].GetSpectrumData(sourceSpectrums[i], 0, fftWindow);
                 sourceSpectrums[i] = audioSources[i].UpdateThisAnimClipLeg();
             }
-            else // Àç»ý ÁßÀÌ ¾Æ´Ï°Å³ª nullÀÎ ¼Ò½º´Â 0À¸·Î ÃÊ±âÈ­
+            else // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ï°Å³ï¿½ nullï¿½ï¿½ ï¿½Ò½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
             {
                 if (audioSources[i] != null && !audioSources[i].IsListenOrPaused()) audioSources.RemoveAt(i);
                 System.Array.Clear(sourceSpectrums[i], 0, sourceSpectrums[i].Length);
@@ -138,17 +138,17 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
 
     private void CombineSpectrumData()
     {
-        // ¸ÕÀú °áÇÕµÈ ½ºÆåÆ®·³ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Õµï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ê±ï¿½È­
         System.Array.Clear(combinedSpectrum, 0, combinedSpectrum.Length);
 
-        // ¿Àµð¿À ¼Ò½º°¡ ¾øÀ¸¸é Á¾·á
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (audioSources.Count == 0) return;
 
-        // ¼±ÅÃµÈ ¹Í½Ì ¹æ½Ä¿¡ µû¶ó ½ºÆåÆ®·³ °áÇÕ
+        // ï¿½ï¿½ï¿½Ãµï¿½ ï¿½Í½ï¿½ ï¿½ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         switch (mixingMethod)
         {
             case MixingMethod.Sum:
-                // ¸ðµç ½ºÆåÆ®·³ °ªÀ» ´õÇÔ
+                // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 for (int sourceIndex = 0; sourceIndex < audioSources.Count; sourceIndex++)
                 {
                     for (int i = 0; i < spectrumSize; i++)
@@ -161,7 +161,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
                 break;
 
             case MixingMethod.Average:
-                // ¸ðµç ½ºÆåÆ®·³ °ªÀÇ Æò±Õ °è»ê
+                // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
                 for (int sourceIndex = 0; sourceIndex < audioSources.Count; sourceIndex++)
                 {
                     for (int i = 0; i < spectrumSize; i++)
@@ -172,7 +172,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
                     }
                 }
 
-                // È°¼º ¿Àµð¿À ¼Ò½º ¼ö·Î ³ª´©±â (0À¸·Î ³ª´©±â ¹æÁö)
+                // È°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
                 int activeSources = GetActiveSourceCount();
                 if (activeSources > 0)
                 {
@@ -184,7 +184,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
                 break;
 
             case MixingMethod.Maximum:
-                // °¢ ÁÖÆÄ¼ö¿¡¼­ ÃÖ´ë°ª »ç¿ë
+                // ï¿½ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ë°ª ï¿½ï¿½ï¿½
                 for (int sourceIndex = 0; sourceIndex < audioSources.Count; sourceIndex++)
                 {
                     for (int i = 0; i < spectrumSize; i++)
@@ -196,7 +196,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
         }
     }
 
-    // È°¼º »óÅÂÀÎ ¿Àµð¿À ¼Ò½º °³¼ö ¹ÝÈ¯
+    // È°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
     private int GetActiveSourceCount()
     {
         int count = 0;
@@ -214,9 +214,9 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
 
     #region Main System Public Functions (**Update Calculate Audio Spectrum**)
 
-    void CalculateFrequencyBands(int _BarRtLeg, System.Action<int, float> _UpdataCallBack) //¾ø´Ù¸é °è»êÇØÁØ ¸ðµç Target¸¦ 8°³·Î ÀÓÀÇ »êÁ¤ÇÑ´Ù
+    void CalculateFrequencyBands(int _BarRtLeg, System.Action<int, float> _UpdataCallBack) //ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Targetï¿½ï¿½ 8ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½
     {
-        // °¢ ¸·´ëº°·Î ÇØ´çÇÏ´Â ÁÖÆÄ¼ö ¹üÀ§ÀÇ ¿¡³ÊÁö Æò±ÕÀ» °è»ê
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ëº°ï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         for (int barIndex = 0; barIndex < _BarRtLeg; barIndex++)
         {
             float lowFreq = GetBandLowerFrequency(barIndex, _BarRtLeg);
@@ -225,39 +225,39 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
             int lowIndex = FrequencyToSpectrumIndex(lowFreq);
             int highIndex = FrequencyToSpectrumIndex(highFreq);
 
-            // ÀÎµ¦½º ¹üÀ§ º¸Á¤
+            // ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             lowIndex = Mathf.Clamp(lowIndex, 0, spectrumSize - 1);
             highIndex = Mathf.Clamp(highIndex, 0, spectrumSize - 1);
 
-            // ÃÖ¼Ò 1°³ÀÇ »ùÇÃÀº Æ÷ÇÔµÇµµ·Ï
+            // ï¿½Ö¼ï¿½ 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÔµÇµï¿½ï¿½ï¿½
             highIndex = Mathf.Max(highIndex, lowIndex + 1);
 
             float sum = 0f;
             int sampleCount = 0;
 
-            // ÇØ´ç ÁÖÆÄ¼ö ´ë¿ªÀÇ ¸ðµç »ùÇÃ ÇÕ»ê
+            // ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½ë¿ªï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Õ»ï¿½
             for (int i = lowIndex; i <= highIndex; i++)
             {
                 sum += combinedSpectrum[i];
                 sampleCount++;
             }
 
-            // Æò±Õ °è»ê (0À¸·Î ³ª´©±â ¹æÁö)
+            // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
             float average = sampleCount > 0 ? sum / sampleCount : 0;
 
-            // Á¦°ö±Ù Àû¿ëÀ¸·Î ³·Àº °ªµµ Àß º¸ÀÌ°Ô
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½
             average = Mathf.Sqrt(average);
 
-            // Å¸°Ù ³ôÀÌ ¼³Á¤
+            // Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             _UpdataCallBack(barIndex, average);
             //targetHeights[barIndex] = average * _MultiplierSped;
         }
     }
 
-    // ¸·´ë ÀÎµ¦½º¿¡ µû¸¥ ÇÏÇÑ ÁÖÆÄ¼ö °è»ê
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½ï¿½ï¿½
     float GetBandLowerFrequency(int barIndex, int totalBars)
     {
-        // 20Hz ~ 20000Hz ±¸°£À» ·Î±× ½ºÄÉÀÏ·Î ºÐÇÒ
+        // 20Hz ~ 20000Hz ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½ï¿½ï¿½ï¿½
         float minFreq = 20f;
         float maxFreq = m_MaxFreq;//20000f;
         float logMin = Mathf.Log10(minFreq);
@@ -268,7 +268,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
         return Mathf.Pow(10f, logFreq);
     }
 
-    // ¸·´ë ÀÎµ¦½º¿¡ µû¸¥ »óÇÑ ÁÖÆÄ¼ö °è»ê
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½ï¿½ï¿½
     float GetBandUpperFrequency(int barIndex, int totalBars)
     {
         return GetBandLowerFrequency(barIndex + 1, totalBars);
@@ -309,7 +309,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
 
     #endregion
 
-    #region À¯´ÏÆ¼ ÀÌº¥Æ® ÇÔ¼ö
+    #region ï¿½ï¿½ï¿½ï¿½Æ¼ ï¿½Ìºï¿½Æ® ï¿½Ô¼ï¿½
 
     public override void ProcessUpdate()
     {
@@ -317,10 +317,10 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
 
         if (!m_isActionProcess) return;
 
-        // ¸ðµç ¿Àµð¿À ¼Ò½º¿¡¼­ ½ºÆåÆ®·³ µ¥ÀÌÅÍ °¡Á®¿À±â
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         GetAllSpectrumData();
 
-        // ½ºÆåÆ®·³ µ¥ÀÌÅÍ ÇÕÄ¡±â (¼±ÅÃÇÑ ¹Í½Ì ¹æ½Ä¿¡ µû¶ó)
+        // ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Í½ï¿½ ï¿½ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½ï¿½)
         CombineSpectrumData();
 
         m_OutPutAudioEqulList.ForEach(x =>

@@ -20,6 +20,7 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
 
     [Header("Required Values")]
     [SerializeField] private Transform m_MapModuleHeaderTr;
+    [SerializeField] private OutPutAudioEqulizeModule m_WPSticksEqulizer;
     [SerializeField, ReadOnly] private RequiredSoundGamePopUp m_RequiredSoundGamePopUp;
     [SerializeField, ReadOnly] List<SubModuleControllerBase> m_GetMainSubControllerBases = new();
     [SerializeField, ReadOnly] List<ElemSinngerSubController> m_GetCurrSinngerSubControllers = new();
@@ -84,6 +85,8 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
         #endregion
         #region Map Module Parsing Init 
         //m_SDataSoundGameInfo.SubDScriptableInit();
+        var ApplyAudioMixer = this.transform.ChildLinearStuctureSearch<AudioMixVisualizeSubController>()[0];
+        TempASCInfo.s_PairParamDatas.Add(new(ApplyAudioMixer, null));
 
         pp_MainMapModuleByVersion.ChildLinearStuctureSearch<ElemSinngerSubController>().HForEach(x =>
         {
@@ -138,8 +141,9 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
     //카메라 전환부터 진행할것 카메라 전환은 모두 ProductionCam에서 진행할것
     public void NewProductionSoundGameController()
     {
-
-
+        ModuleMonoBase ApplyMonoBase = null;
+        m_WPSticksEqulizer.Initlization(ApplyMonoBase, I_GetSubModule<AudioMixVisualizeSubController>());
+        m_WPSticksEqulizer.SemiBreakPoint(true);
     }
 
     public void OldProductionSoundGameController()

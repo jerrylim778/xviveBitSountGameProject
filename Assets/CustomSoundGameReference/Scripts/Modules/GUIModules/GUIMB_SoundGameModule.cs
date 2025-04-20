@@ -8,7 +8,7 @@ using Commons.Helpers;
 public class GUIMB_SoundGameModule : SystemBase
 {
     [Header("===Control Values===")]
-    [SerializeField] private bool m_isTestMode = false; //다른 클래스에 대부분 사용한다면 부모클래스로 격상 요망..
+    [SerializeField] private bool m_isTestMode = false; 
     [SerializeField] private bool m_isLoadingMainProcessParsing = true;
     [Header("===GUI_MFLTestModeReference===")]
     [SerializeField] private Image m_SubBG;
@@ -16,6 +16,7 @@ public class GUIMB_SoundGameModule : SystemBase
     public override void Initlization()
     {
         SubTweening(false);
+        Camera.main.transform.position = new Vector3(0f, 10f, Camera.main.transform.position.z);
         m_SubBG.gameObject.SetActive(false);
         m_SubBG.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 0f;
         System.Action ComplateAction = () =>

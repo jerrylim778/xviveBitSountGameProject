@@ -20,7 +20,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
     [SerializeField] private Image m_MainTitle;
     [SerializeField] private OutPutAudioEqulizeModule m_BounsTItleBG;
     [SerializeField] private Button m_LeftArrowBtn, m_RightArrowBtn, m_SelectBtn;
-    [SerializeField, ReadOnly] private SpriteRenderer m_MapModuleBG, m_FrontPanel;
+    [SerializeField, ReadOnly] private SpriteRenderer m_MapModuleBG/*, m_FrontPanel*/;
     [Header("===Required Values===")]
     [SerializeField] private Color m_EmptyColor;
     [SerializeField] private GUIAlbumModule m_CurrAlbumModulePrefab;
@@ -83,7 +83,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
     private void ApplyInfos(AlbumInfo _CurrAlbumInfo, System.Action _EndCallBack = null)
     {
         m_MapModuleBG = FindAnyObjectByType<SoundGameController>().pp_MainMapModuleBase;
-        m_FrontPanel = m_MapModuleBG.transform.GetChild(0).GetComponent<SpriteRenderer>();
+        //m_FrontPanel = m_MapModuleBG.transform.GetChild(0).GetComponent<SpriteRenderer>();
         m_MapModuleBG.sprite = _CurrAlbumInfo.s_SpriteArray[1];
         var GetBGColor = m_MapModuleBG.color; GetBGColor.a = 0;
         m_MapModuleBG.color = GetBGColor;
