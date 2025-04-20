@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 3
+  tags:
+  - StartProcess_StaticFirst
+  - StartProcess_StaticAfter
+  - StartProcess_Dynimic
+  - MFL_DefultItem
+  - Pool
+  - Fluid
+  - CinemachineTarget
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - RayTarget
+  - OutLiner
+  - DefultLevelGround
+  - TileModule
+  - BachingBlocks
+  - NavSurface
+  - NPC
+  - Wall
+  - ContentsWall
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: BackGround
+    uniqueID: 3575979651
+    locked: 0
+  - name: MiddleGround
+    uniqueID: 873979061
+    locked: 0
+  - name: ForceGround
+    uniqueID: 3737962307
+    locked: 0
+  m_RenderingLayers:
+  - Default

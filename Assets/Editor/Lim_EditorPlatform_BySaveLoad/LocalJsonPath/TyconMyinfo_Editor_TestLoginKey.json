@@ -1,0 +1,56 @@
+﻿{
+    "s_UserDBMainIDX": 0,
+    "s_NickName": 0,
+    "s_SavedInvenItemKeys": [],
+    "s_SavedAmountItemKeys": [],
+    "s_SavedMapItemKeys": [],
+    "s_SavedUserDatas": {
+        "s_DBSavedIDX": "",
+        "s_SavedPos": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "s_SavedRot": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "s_OutPutNewActionInfo": {
+            "s_ActionInfoLocalIDX": 0,
+            "s_isShowProduction": false,
+            "odin_isForceApplyData": false,
+            "s_ReciveCamData": 0,
+            "s_CharacterUsePowerType": 0,
+            "s_CalculateIDX": 0
+        }
+    },
+    "s_SavedTyconDatas": {
+        "s_DBSavedIDX": "TestLoginKey",
+        "s_SavedMoneyCount": 0,
+        "s_SavedDefultLevelInfo": {
+            "s_TYCItemIDX": 500,
+            "s_SavedBlocksInfos": [
+                {
+                    "s_SaveAreaIDX": 2,
+                    "s_SavedBlocksBoundaryInfo": {
+                        "s_SavedSelfBlockInfo": {
+                            "s_TYCItemIDX": 700,
+                            "s_SavedTYCPos": {
+                                "x": 42.28458023071289,
+                                "y": 0.09999999403953552,
+                                "z": 19.640705108642579
+                            },
+                            "s_SavedTYCRot": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }
+                        },
+                        "s_SavedContentsInfos": []
+                    }
+                }
+            ]
+        }
+    }
+}
