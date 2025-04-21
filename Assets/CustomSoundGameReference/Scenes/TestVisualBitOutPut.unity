@@ -678,7 +678,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &404433625
 RectTransform:
   m_ObjectHideFlags: 0
@@ -998,7 +998,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &659167300
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1144,7 +1144,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &694967933
 Transform:
   m_ObjectHideFlags: 0
@@ -136366,6 +136366,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71124010fcc484f49bb70ee886a3e7ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_BitStart: 1
+  m_isBitStartOn: 0
   m_AudioClipSpectrumExtractor: {fileID: 11400000, guid: 44cc8c3b0ba9c544f9aa8f2610a05994, type: 2}
   m_ASInfo: {fileID: 1070722240}
   m_isRunSaved: 0
@@ -136716,7 +136718,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1505116610
 RectTransform:
   m_ObjectHideFlags: 0

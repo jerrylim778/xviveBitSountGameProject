@@ -1,9 +1,14 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Sirenix.OdinInspector;
+using Commons.Helpers;
 
 public class MonoReciveASClipByBitInfos : MonoBehaviour
 {
+    [SerializeField] private bool m_BitStart = false;
+    [SerializeField, ReadOnly, ShowIf("m_BitStart")] private bool m_isBitStartOn;
+
     [SerializeField] private AudioClipSpectrumExtractor m_AudioClipSpectrumExtractor;
     [SerializeField] private List<float[]> m_ReciveSubList = new();
     [SerializeField] private AudioSource m_ASInfo;
@@ -46,10 +51,34 @@ public class MonoReciveASClipByBitInfos : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
+        if(Input.GetKeyDown(KeyCode.P))
         {
-            ResetMainAudioClipTime();
-            m_isRunSaved = true;
+            #region 이전 작업 관련
+            if (m_BitStart)
+            {
+                m_isBitStartOn = !m_isBitStartOn;
+                var GetAudioMixCon =
+                FindAnyObjectByType<AudioMixVisualizeSubController>();
+                GetAudioMixCon.BreakPoint(m_isBitStartOn,
+                SubModuleControllerBase.SubModuleBreakType.OnlyBreakElems);
+                var GetAllList =
+                FindObjectsOfType<OutPutAudioEqulizeModule>().ToList().FindAll(x => !x.pp_isTestMode);
+                GetAllList.HForEach(x =>
+                {
+                    if (m_isBitStartOn)
+                    {
+                        ModuleMonoBase NullMonoBase = null;
+                        x.Initlization(NullMonoBase, GetAudioMixCon);
+                    }
+                    else x.SemiBreakPoint(m_isBitStartOn);
+                });
+            }
+            else
+            {
+                ResetMainAudioClipTime();
+                m_isRunSaved = true;
+            }
+            #endregion
         }
 
         if (m_isRunSaved)

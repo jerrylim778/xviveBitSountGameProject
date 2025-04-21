@@ -136,9 +136,17 @@ public class GamePlayManager : MonoBehaviour, I_StartControllerBase, I_CheckInit
                 $"{nameof(MyItemInfoBuffer)}이 필연적으로 존재해야합니다,!", Helper.HDType.Error)) return;
                 #endregion
                 ItemInfo[] GetInfos = ((MyItemInfoBuffer)_SetData).buffer_MyItemInfos;
-                if (GetInfos.CheckArrayNull(0)) m_GetAllMainControllers = m_MyInfo.ApplyModulesByInfo(GetInfos);
-                else m_GetAllMainControllers = FindObjectsOfType<ControllerBase>().ToList().FindAll(x => x is not SubModuleControllerBase).ToArray();
-                m_GetAllMainControllers.HForEach(x => x.Initlization(m_MyInfo, EndCallBack)); //전부 초기 셋팅이 끝났는지 확인해야한다
+                bool isHaveElem = GetInfos.CheckArrayNull(GetInfos.Length - 1);
+                m_GetAllMainControllers = FindObjectsOfType<ControllerBase>().ToList().FindAll(x => x is not SubModuleControllerBase).ToArray();
+                Helper.HCountForEach(0, m_GetAllMainControllers.Length - 1, _CountIDX =>
+                m_GetAllMainControllers[_CountIDX].Initlization(m_MyInfo, isHaveElem ? GetInfos[_CountIDX] : null, EndCallBack));
+                #region 원래를 전용 MyInfo에 전달 이후에 초기화로 각 MyInfo를 전달해야 한다 ******************************
+                //var isHaveInfos = GetInfos.CheckArrayNull(0);
+                //if (isHaveInfos)
+                //m_GetAllMainControllers = m_MyInfo == null ? new ControllerBase[GetInfos.Length] : m_MyInfo.ApplyModulesByInfo(GetInfos);
+                //else m_GetAllMainControllers = FindObjectsOfType<ControllerBase>().ToList().FindAll(x => x is not SubModuleControllerBase).ToArray();
+                //m_GetAllMainControllers.HForEach(x => x.Initlization(m_MyInfo, EndCallBack)); //전부 초기 셋팅이 끝났는지 확인해야한다
+                #endregion
                 CheckUserPlayCount(PlayConditionType.PlayerSettingDone);
                 break;
             case GamePlayType.Play:

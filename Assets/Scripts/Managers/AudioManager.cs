@@ -129,14 +129,15 @@ public class AudioManager : MonoBehaviour
 
     #region Main System Public Functions (**Bit Sound Game Project Version (**이후 리팩토링 사용 or 전부 삭제 요망**)**)
 
-    public AudioASInfo PlaySound(bool _isDirPlay, bool _isLoop, string _Name, AudioClip _PlaySoundClip, I_OwnerShip _GetOwnerShip = null)
+    public AudioASInfo PlaySound(bool _isDirPlay, bool _isLoop, string _Name, 
+    AudioType _GetATType, AudioClip _PlaySoundClip, I_OwnerShip _GetOwnerShip = null)
     {
         AudioInfo? GetCallAudioInfos = null;
         int FIDX = -1; FIDX = SavedAudioInfos.HFindIndex(x => x.s_AudioName == _Name);
         if (FIDX != -1)  GetCallAudioInfos = SavedAudioInfos[FIDX];
         bool isOnlyApplyClipInfo = GetCallAudioInfos == null;
         if (isOnlyApplyClipInfo)
-        GetCallAudioInfos = new AudioInfo(_Name, AudioType.GameSFX, _PlaySoundClip, _isLoop, 1);
+        GetCallAudioInfos = new AudioInfo(_Name, _GetATType, _PlaySoundClip, _isLoop, 1);
 
         AudioASInfo ApplyAS = GetCallAudioInfos.Value.s_AudioType switch
         {
@@ -145,6 +146,7 @@ public class AudioManager : MonoBehaviour
             AudioType.GameSFX => FindListenAS(AudioType.GameSFX, m_GameSFXASInfos, _GetOwnerShip),
             _ => throw new System.Exception($"{nameof(SavedAudioInfos)}에 없어야되는 타입이 파싱되었습니다.!")
         };
+        if (GetCallAudioInfos.Value.s_AudioType != AudioType.GameSFX) ApplyAS.ApplyOrResetOwner(_GetOwnerShip);
 
         AdjustOutPutSound(ApplyAS, GetCallAudioInfos.Value, _isDirPlay, isOnlyApplyClipInfo);
         return ApplyAS;

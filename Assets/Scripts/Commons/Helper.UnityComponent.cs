@@ -88,5 +88,15 @@ namespace Commons.Helpers
         }
 
         #endregion
+
+        #region Support All Color Elem Component
+
+        public static Color SetChangeColorAlpha(Color _ReciveColor, float _Alpha)
+        {
+            _ReciveColor.a = _Alpha;
+            return _ReciveColor;
+        }
+
+        #endregion
     }
 }

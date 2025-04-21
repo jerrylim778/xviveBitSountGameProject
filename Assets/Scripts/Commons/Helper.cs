@@ -315,7 +315,7 @@ namespace Commons.Helpers
         //=> _GetCheckList != null && _GetCheckList.Count > _CheckCount;
 
         public static bool CheckArrayNull<T>(this IList<T> _GetCheckArray, int _CheckCount)
-        => _GetCheckArray != null && _GetCheckArray.Count > _CheckCount;
+        => _GetCheckArray != null && _CheckCount < _GetCheckArray.Count;
 
         #endregion
 

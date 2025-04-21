@@ -6,7 +6,7 @@ using Commons.Helpers;
 using Sirenix.OdinInspector;
 using DG.Tweening;
 
-public class SoundGameController : ControllerBase, I_SubModulesCollection
+public class SoundGameController : ControllerBase, I_SubModulesCollection, I_OwnerShip
 {
     [Header("Test Control Values")]
     [SerializeField, ShowIf(nameof(m_isTestMode))] private bool m_isUsedStartEvent;
@@ -26,7 +26,10 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
     [SerializeField, ReadOnly] List<ElemSinngerSubController> m_GetCurrSinngerSubControllers = new();
 
     [Header("Sound Level Values")]
+    [SerializeField, ReadOnly] private AudioASInfo m_CurrAudioASinfo;
+    [SerializeField, ReadOnly] private ElemASBuffer m_CurrElemASBuffer;
     [SerializeField] private SDataSoundGameInfo m_SDataSoundGameInfo;
+    private AlbumInfo m_CurrAlbumInfo; //전용 MyInfo를 만들어 이전 요망 **
 
     [Tooltip("Required Values")]
     //private bool m_isFirst;
@@ -36,6 +39,7 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
     private System.Action<PlayConditionType> m_MainConditionCallBack;
 
     //Property
+    public bool pp_isOutPutOldVer => m_isOutPutOldVer;
     public bool pp_isMusicOn { get; private set; }
     public float pp_CycleCurrTime { get; private set; }
     public float pp_CycleMaxTime { get; private set; } 
@@ -50,7 +54,8 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
     {
         TemporyApplySubControllerInfos TempASCInfo = default(TemporyApplySubControllerInfos);
         
-        CheckAndApplyByParams<MyInfo>(_ParsingParams, x => m_ReciveMyInfo = x);
+        CheckAndApplyByParams<MyInfo>(_ParsingParams, x => m_ReciveMyInfo = x); //이후 SoundGameController전용 MyInfo를 만들어서 해당구역에서 ItemInfo를 추출할것
+        CheckAndApplyByParams<AlbumInfo>(_ParsingParams, x => m_CurrAlbumInfo = x);
         CheckAndApplyByParams<System.Action<PlayConditionType>>(_ParsingParams, x => m_MainConditionCallBack = x);
         CheckAndApplyByParams<TemporyApplySubControllerInfos>(_ParsingParams, x => TempASCInfo = x);
         #region Only TestMode Init
@@ -126,24 +131,90 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
 
         #endregion
 
-        StartCoroutine("TestCO_WaitProduction");
+        StartCoroutine(CO_WaitProduction(0.05f, () => 
+        {
+            if (m_isOutPutOldVer) OldProductionSoundGameController();
+            else StartCoroutine(NewProductionSoundGameController());
+        }));
         return null;
+    }
+
+    public override void ForcePlayOrStopOrder(bool _isPlay)
+    {
+        base.ForcePlayOrStopOrder(_isPlay);
+        m_WPSticksEqulizer.SemiBreakPoint(true);
+        m_RequiredSoundGamePopUp.BreakPoint(_isPlay);
+        m_GetMainSubControllerBases.ForEach(x => x.BreakPoint(_isPlay));
+    }
+
+    private void ResetStartControl()
+    {
+        ResetMainAudioClipTime();
+    }
+
+    private void ResetMainAudioClipTime()
+    {
+        m_GetCurrSinngerSubControllers.ForEach(x => x.AllRestart());
+        m_DSPTimeNow = AudioSettings.dspTime;
+        m_TotalPausedDuration = 0; m_PauseStartTime = 0;
+        m_CurrDSPRunTime = 0; pp_CycleCurrTime = 0f;
+        m_DirBeforeCycleCurrTime = 0f;
     }
 
     #region Production This Controller Reference
 
-    IEnumerator TestCO_WaitProduction()
+    IEnumerator CO_WaitProduction(float _WaitTime, System.Action _EndCallBack)
     {
-        yield return new WaitForSeconds(0.05f);
-        if (m_isOutPutOldVer) OldProductionSoundGameController();
-        else NewProductionSoundGameController();
+        yield return new WaitForSeconds(_WaitTime);
+        _EndCallBack();
     }
     //카메라 전환부터 진행할것 카메라 전환은 모두 ProductionCam에서 진행할것
-    public void NewProductionSoundGameController()
+    IEnumerator NewProductionSoundGameController()
     {
-        ModuleMonoBase ApplyMonoBase = null;
-        m_WPSticksEqulizer.Initlization(ApplyMonoBase, I_GetSubModule<AudioMixVisualizeSubController>());
-        m_WPSticksEqulizer.SemiBreakPoint(true);
+        #region Tweening Before Init 
+        var MainSR = pp_MainMapModuleByVersion.GetChild(0).GetComponent<SpriteRenderer>();
+        var MainParticle = pp_MainMapModuleByVersion.GetChild(1).GetComponent<ParticleSystem>();
+        var ApplyMainICONPR = pp_MainMapModuleByVersion.GetChild(0).GetChild(0);
+        //var ReturnMainOGScale = MainSR.transform.localScale;
+        //MainSR.transform.localScale = ReturnMainOGScale * 0.2f;
+
+        MainSR.color = Helper.SetChangeColorAlpha(MainSR.color, 0f);
+        MainParticle.Stop();
+        MainParticle.gameObject.SetActive(false);
+        ApplyMainICONPR.gameObject.SetActive(false);
+        m_WPSticksEqulizer.gameObject.SetActive(false);
+
+        ApplyMainICONPR.GetChild(0).GetComponent<SpriteRenderer>().sprite = 
+        m_CurrAlbumInfo.s_SpriteArray[0];
+        //m_WPSticksEqulizer.transform.localScale = new Vector3(0f, 1f, 1f);
+
+        MainParticle.gameObject.SetActive(true);
+        if (MainParticle.isPlaying) MainParticle.Stop(); MainParticle.Play();
+
+        #endregion
+
+        yield return new WaitForSeconds(0.8f);
+
+        MainSR.gameObject.SetActive(true);
+        //MainSR.transform.DOScale(ReturnMainOGScale, 0.65f).SetEase(Ease.InOutSine);
+        MainSR.DOColor(Helper.SetChangeColorAlpha(MainSR.color, 1f), 0.85f).SetEase(Ease.InOutSine).OnComplete(() =>
+        {
+            m_WPSticksEqulizer.gameObject.SetActive(true);
+            InitAudioBaouns(true, m_CurrAlbumInfo, () => GamePlaySystem.Instance.MainPopUpPush<RequiredSoundGamePopUp>());
+            ApplyMainICONPR.gameObject.SetActive(true);
+
+            var GetLists = SplitListMiddleCount(m_GetCurrSinngerSubControllers);
+            GetLists.HForEach(x => Helper.HCountForEach(0, x.Count - 1, _CountIDX =>
+            {
+                var MainSR = x[_CountIDX].GetComponent<SpriteRenderer>();
+                var ApplySubDecorSR = x[_CountIDX].transform.GetChild(0).GetComponent<SpriteRenderer>();
+                MainSR.color = Helper.SetChangeColorAlpha(MainSR.color, 0f);
+                ApplySubDecorSR.color = Helper.SetChangeColorAlpha(ApplySubDecorSR.color, 0f);
+                x[_CountIDX].gameObject.SetActive(true);
+                x[_CountIDX].ElemSinngerOutPutInit(_CountIDX);
+            }));
+            I_CheckSubModuleIsAllCanAction(this);
+        });
     }
 
     public void OldProductionSoundGameController()
@@ -167,27 +238,6 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
     }
     #endregion
 
-    public override void ForcePlayOrStopOrder(bool _isPlay)
-    {
-        base.ForcePlayOrStopOrder(_isPlay);
-        m_RequiredSoundGamePopUp.BreakPoint(_isPlay);
-        m_GetMainSubControllerBases.ForEach(x => x.BreakPoint(_isPlay));
-    }
-
-    private void ResetStartControl()
-    {
-        ResetMainAudioClipTime();
-    }
-
-    private void ResetMainAudioClipTime()
-    {
-        m_GetCurrSinngerSubControllers.ForEach(x => x.AllRestart());
-        m_DSPTimeNow = AudioSettings.dspTime;
-        m_TotalPausedDuration = 0; m_PauseStartTime = 0;
-        m_CurrDSPRunTime = 0; pp_CycleCurrTime = 0f;
-        m_DirBeforeCycleCurrTime = 0f;
-    }
-
     #region Main System Private Functions 
 
     //Sound Refereence
@@ -208,6 +258,36 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
         m_GetCurrSinngerSubControllers.ForEach(x => { if (x.pp_isOn) x.BreakPoint(pp_isMusicOn); });
 
         return pp_isMusicOn;
+    }
+
+    private void InitAudioBaouns(bool _isAdd, AlbumInfo _CurrAlbumInfo = null, System.Action _EndCallBack = null)
+    {
+        if (_isAdd) m_CurrAudioASinfo = Appinstance.Instance.ms_AudioManager.PlaySound(true,
+        _CurrAlbumInfo.m_MainClipBGM.s_isLoop, _CurrAlbumInfo.m_MainClipBGM.s_ItemName, 
+        AudioType.BGM, _CurrAlbumInfo.m_MainClipBGM.s_AudioClipsInfo[0], this);
+
+        var ApplyMixerCon = I_GetSubModule<AudioMixVisualizeSubController>();
+        if (_isAdd)
+        {
+            m_CurrElemASBuffer = new ElemASBuffer(false, m_CurrAudioASinfo.s_AudioSource, _CurrAlbumInfo.m_MainClipBGM);
+            ApplyMixerCon.AddAudioSource(m_CurrElemASBuffer);
+        }
+        else ApplyMixerCon.RemoveAudioSource(m_CurrElemASBuffer);
+
+        
+        if (_isAdd)
+        {
+            ModuleMonoBase ApplyMonoBase = null;
+            m_WPSticksEqulizer.Initlization(ApplyMonoBase, ApplyMixerCon, _EndCallBack);
+            //m_WPSticksEqulizer.SemiBreakPoint(true);
+        }
+        else
+        {
+            m_CurrAudioASinfo.StopOrComplate();
+            ApplyMixerCon.InitOutPutAudioSpectrum(false, m_WPSticksEqulizer);
+            m_CurrAudioASinfo = null;
+            m_CurrElemASBuffer = null;
+        }
     }
 
     #endregion
@@ -364,10 +444,28 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection
     }
     #endregion
 
+    #region Sub System Private Functions 
+
+    //Helpe 로 이전할것
+    private List<List<T>> SplitListMiddleCount<T>(IList<T> _GetList) where T : class
+    {
+        bool _isCol = _GetList.Count % 2 == 0; //짝 홀
+        int GetIDX = _isCol ?
+        _GetList.Count / 2 : Mathf.RoundToInt(_GetList.Count / 2);
+        var LHalfList = new List<T>(); var RHalfList = new List<T>();
+        Helper.HCountForEach(0, GetIDX - 1, _CountIDX => LHalfList.Add(_GetList[_CountIDX]));
+        Helper.HCountForEach(GetIDX, _isCol ? GetIDX * 2 - 1 : GetIDX * 2, _CountIDX => RHalfList.Add(_GetList[_CountIDX]));
+        LHalfList.Reverse();
+        return new List<List<T>>(2){ LHalfList, RHalfList };
+    }
+
+    #endregion
+
     #region 유니티 이벤트 함수
     void Start()
     {
         //m_MapModuleHeaderTr.gameObject.SetActive(false);
+        Helper.ChildLinearStuctureSearch(pp_MainMapModuleByVersion).HForEach(x => x.gameObject.SetActive(false));
         if (!m_isTestMode || !m_isUsedStartEvent) return;
         StartCoroutine("TestCO_WaitAppInstanceStart");
     }
@@ -395,6 +493,8 @@ public abstract class ModuleMonoBase : MonoBehaviour
 {
     [SerializeField] protected bool m_isTestMode;
 
+    public bool pp_isTestMode => m_isTestMode;
+
     protected bool m_isProcessAction;
 
     public virtual void Initlization(I_PopUpInfo _MainPopUpBase, params object[] _OtherParams) { }
@@ -404,4 +504,12 @@ public abstract class ModuleMonoBase : MonoBehaviour
     public virtual void Initlization(ModuleMonoBase _MainModuleBase, params object[] _OtherParams) { }
 
     public abstract void SemiBreakPoint(bool _isBreakPoint);
+
+    protected virtual bool CheckAndApplyByParams<T>(object[] _ParsingParams, System.Action<T> _ComplateCallBack)
+    {
+        int FIDX = -1; FIDX =
+        _ParsingParams.HFindIndex(x => x != null && (x.GetType().Name == typeof(T).Name || x is T));
+        if (FIDX != -1) _ComplateCallBack?.Invoke((T)_ParsingParams[FIDX]);
+        return FIDX != -1;
+    }
 }

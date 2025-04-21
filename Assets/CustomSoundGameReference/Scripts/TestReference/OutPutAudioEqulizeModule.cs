@@ -1,8 +1,20 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
+using Commons.Helpers;
+using DG.Tweening;
 
 public class OutPutAudioEqulizeModule : ModuleMonoBase
 {
+    [System.Serializable]
+    public enum OPAEType
+    {
+        OneObjectScaleType,
+        StickArrayType,
+    }
+
+    //이후 따로 클래스를 통해 연출효과를 줄 수 있도록 수정한다
+    [SerializeField, HideIf("m_isTestMode")] protected bool m_isUsedLocalProduction; 
     [SerializeField, ReadOnly] private ModuleMonoBase m_MainModuleMonoBase;
     [SerializeField] private OPAEType m_OutPutAudioEqulType;
     
@@ -16,14 +28,18 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
     public int pp_IDXArray => m_OutPutAudioEqulType switch
     { OPAEType.StickArrayType => m_StickArrayTRs.Length, _ => 18 };
 
-    private float[] targetHeights, currentHeights; // �ε巯�� �ִϸ��̼��� ���� ����
+    private float[] targetHeights, currentHeights; 
 
     public override void Initlization(ModuleMonoBase _MainModuleBase, params object[] _OtherParams)
     {
         m_MainModuleMonoBase = _MainModuleBase;
         var GetMixSubController = _OtherParams[0] as AudioMixVisualizeSubController;
+        System.Action EndCallBack = null;
+        CheckAndApplyByParams<System.Action>(_OtherParams, x => EndCallBack = x);
+        
         GetMixSubController.InitOutPutAudioSpectrum(true, this);
-        if(m_isTestMode) SemiBreakPoint(true);
+        if (m_isTestMode) SemiBreakPoint(true);
+        else if(!m_isTestMode && m_isUsedLocalProduction) ActionBeforeOutPutProduction(EndCallBack);
     }
 
     public override void SemiBreakPoint(bool _isBreakPoint)
@@ -49,7 +65,6 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
         
         for (int i = 0; i < pp_IDXArray; i++)
         {
-            // �ε巯�� �ִϸ��̼� ����
             currentHeights[i] = Mathf.Lerp(currentHeights[i], targetHeights[i], Time.deltaTime * m_LerpSped);
 
 
@@ -64,9 +79,8 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
             {
                 if (m_StickArrayTRs[i] == null) continue;
 
-                // UI ���� ũ�� ������Ʈ
                 Vector3 size = m_StickArrayTRs[i].localScale;
-                size.y = Mathf.Clamp(currentHeights[i], 1f, m_MaxCliping);
+                size.y = Mathf.Clamp(currentHeights[i], 0f, m_MaxCliping);
                 m_StickArrayTRs[i].localScale = size;
             }
         }
@@ -75,12 +89,56 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
     private Vector3 ReturnClamp(float _Curr, float _Min, float _Max) => new Vector3(
     Mathf.Clamp(_Curr, _Min, _Max), Mathf.Clamp(_Curr, _Min, _Max), Mathf.Clamp(_Curr, _Min, _Max));
 
-    [System.Serializable]
-    public enum OPAEType
+    #region Sub System Private Functions (**OutPut Elem Production**)
+
+    private void ActionBeforeOutPutProduction(System.Action _EndCallBack)
     {
-        OneObjectScaleType,
-        StickArrayType,
+        switch (m_OutPutAudioEqulType)
+        {
+            case OPAEType.StickArrayType:
+                var GetParticles =
+                this.transform.ChildLinearStuctureSearch<ParticleSystem>();
+                if (GetParticles.Length > 0)
+                {
+                    var ApplyParticle = GetParticles[0];
+                    var GetOGScale = ApplyParticle.transform.localScale;
+                    ApplyParticle.transform.DOScaleY(0.8f, 0.25f).SetEase(Ease.OutSine).OnComplete(() =>
+                    ApplyParticle.transform.DOScaleX(0.1f, 0.25f).SetEase(Ease.Linear).OnComplete(() =>
+                    ApplyParticle.transform.DOScaleX(2f, 0.65f).SetEase(Ease.OutSine)));
+                }
+
+                #region 좌우 나눠 각 구간 연출 진행
+                bool _isCol = m_StickArrayTRs.Length % 2 == 0; //짝 홀
+                int GetIDX = _isCol ?
+                m_StickArrayTRs.Length / 2 : Mathf.RoundToInt(m_StickArrayTRs.Length / 2);
+                var LHalfList = new List<Transform>(); var RHalfList = new List<Transform>();
+                Helper.HCountForEach(0, GetIDX - 1, _CountIDX => LHalfList.Add(m_StickArrayTRs[_CountIDX]));
+                Helper.HCountForEach(GetIDX, _isCol? GetIDX * 2 - 1 : GetIDX * 2, _CountIDX => RHalfList.Add(m_StickArrayTRs[_CountIDX]));
+                LHalfList.Reverse();
+                float Delay = 0f; LHalfList.HForEach(x =>
+                {
+                    x.localScale = new Vector3(x.localScale.x, 0f, x.localScale.z);
+                    x.DOScaleY(m_MaxCliping, 0.45f).SetDelay(Delay).SetEase(Ease.OutBack).OnComplete(() =>
+                    x.DOScaleY(0f, 0.25f).SetEase(Ease.OutExpo));
+                    Delay += 0.05f;
+                });
+                int CoundIDX = 0; Delay = 0f; RHalfList.HForEach(x =>
+                {
+                    x.localScale = new Vector3(x.localScale.x, 0f, x.localScale.z);
+                    x.DOScaleY(m_MaxCliping, 0.45f).SetDelay(Delay).SetEase(Ease.OutBack).OnComplete(() =>
+                    x.DOScaleY(0f, 0.25f).SetEase(Ease.OutExpo).OnComplete(() => 
+                    { CoundIDX++; if (CoundIDX >= RHalfList.Count) _EndCallBack?.Invoke(); }));
+                    Delay += 0.05f;
+                });
+                #endregion
+                break;
+            case OPAEType.OneObjectScaleType:
+                _EndCallBack?.Invoke();
+                break;
+        }
     }
+
+    #endregion
 
     private void Start()
     {

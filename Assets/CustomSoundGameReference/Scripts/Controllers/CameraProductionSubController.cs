@@ -36,7 +36,7 @@ public class CameraProductionSubController : SubModuleControllerBase
         m_MoveCamSeq = DOTween.Sequence();
 
         m_MoveCamSeq.Append(
-        this.transform.DOMoveY(_MovePosY, 0.8f).SetDelay(_SetDelay).SetEase(Ease.OutSine).SetEase(Ease.OutBack).
+        this.transform.DOMoveY(_MovePosY, 1.2f).SetDelay(_SetDelay).SetEase(Ease.OutSine).SetEase(Ease.OutBack).
         OnComplete(() => _EndCallBack?.Invoke()));
     }
 

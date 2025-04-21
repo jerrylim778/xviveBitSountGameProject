@@ -10,6 +10,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
 {
     [Header("===Control Values===")]
     [SerializeField] private bool m_isUseStartWhiteFlash = false;
+    [SerializeField] private float m_CurrTweeningSped;
     [Header("===Current Values===")]
     [SerializeField] private AlbumInfo m_CurrAlbumInfo;
     [SerializeField, ReadOnly] private AudioASInfo m_CurrAudioASinfo;
@@ -52,16 +53,16 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
                 var GetIR = x.image.rectTransform;
                 var GetAPos = GetIR.anchoredPosition;
                 GetIR.anchoredPosition = new Vector2(CountIDX == 0 ? 50f : -50f, GetAPos.y);
-                GetIR.DOAnchorPosX(CountIDX == 0 ? -50f : 50f, 0.45f).SetEase(Ease.OutSine);
+                GetIR.DOAnchorPosX(CountIDX == 0 ? -50f : 50f, 0.65f).SetEase(Ease.OutSine);
                 CountIDX++;
             });
-            DOTween.To(() => GetMTCG.alpha, x => GetMTCG.alpha = x, 1f, 0.35f).SetEase(Ease.OutSine).OnComplete(() =>
-            m_MainTitle.transform.DOScale(Vector3.one * 1.25f, 0.3f).SetEase(Ease.OutBounce).OnComplete(() =>
-            m_MainTitle.transform.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack).OnComplete(() =>
+            DOTween.To(() => GetMTCG.alpha, x => GetMTCG.alpha = x, 1f, 0.65f).SetEase(Ease.OutSine).OnComplete(() =>
+            m_MainTitle.transform.DOScale(Vector3.one * 1.25f, 0.6f).SetEase(Ease.OutBounce).OnComplete(() =>
+            m_MainTitle.transform.DOScale(Vector3.one, 0.6f).SetEase(Ease.OutBack).OnComplete(() =>
             ApplyInfos(m_CurrAlbumInfo, () =>
             {
                 m_SelectBtn.interactable = false;
-                m_SelectBtn.transform.DOScale(Vector3.one, 0.45f).
+                m_SelectBtn.transform.DOScale(Vector3.one, 0.65f).
                 SetEase(Ease.InOutExpo).OnComplete(() => m_SelectBtn.interactable = true);
             }))));
             #endregion
@@ -93,7 +94,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
         {
             m_BounsTItleBG.transform.localScale = Vector3.zero;
             m_BounsTItleBG.gameObject.SetActive(true);
-            m_MainTitle.transform.DOScale(Vector3.one * 1.1f, 0.15f).SetEase(Ease.OutBack).OnComplete(() =>
+            m_MainTitle.transform.DOScale(Vector3.one * 1.1f, 0.45f).SetEase(Ease.OutBack).OnComplete(() =>
             InitAudioBaouns(true, m_CurrAlbumInfo));
         });
 
@@ -112,7 +113,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
         m_AudioMixVisualizeSubController = FindAnyObjectByType<AudioMixVisualizeSubController>();
 
         if (_isAdd) m_CurrAudioASinfo = Appinstance.Instance.ms_AudioManager.PlaySound(true,
-        _CurrAlbumInfo.m_MainClipBGM.s_isLoop, _CurrAlbumInfo.m_MainClipBGM.s_ItemName, _CurrAlbumInfo.m_MainClipBGM.s_AudioClipsInfo[0], this);
+        _CurrAlbumInfo.m_MainClipBGM.s_isLoop, _CurrAlbumInfo.m_MainClipBGM.s_ItemName, AudioType.BGM, _CurrAlbumInfo.m_MainClipBGM.s_AudioClipsInfo[0], this);
 
         if (_isAdd) m_CurrElemASBuffer = new ElemASBuffer(false, m_CurrAudioASinfo.s_AudioSource, _CurrAlbumInfo.m_MainClipBGM);
         if (_isAdd) m_AudioMixVisualizeSubController.AddAudioSource(m_CurrElemASBuffer);
@@ -129,6 +130,8 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
         else
         {
             m_CurrAudioASinfo.StopOrComplate();
+            m_AudioMixVisualizeSubController.
+            InitOutPutAudioSpectrum(false, m_BounsTItleBG);
             m_CurrAudioASinfo = null;
             m_CurrElemASBuffer = null;
         }
@@ -139,7 +142,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
     private void AfterProductionCamAndGUI(bool _isReturn, float _SetDelay = 0f, System.Action _EndCallBack = null)
     {
         var GetCamPCon = FindAnyObjectByType<CameraProductionSubController>();
-        (this.transform as RectTransform).DOAnchorPosY(_isReturn ? 0f : 960f, 0.18f).SetEase(Ease.InCirc);
+        (this.transform as RectTransform).DOAnchorPosY(_isReturn ? 0f : 960f, 0.125f).SetEase(Ease.InCirc);
         GetCamPCon.MoveStageTweeningCam(_isReturn ? 10f : 0f, _SetDelay, _EndCallBack: () =>
         _EndCallBack?.Invoke());
     }
@@ -156,7 +159,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
                 AfterProductionCamAndGUI(false, _EndCallBack: () => 
                 {
                     Appinstance.Instance.ms_GamePlayManager.ExecuteChangeAllGameControll(
-                    GamePlayManager.GamePlayType.StartingSet, true, new MyItemInfoBuffer(null));
+                    GamePlayManager.GamePlayType.StartingSet, true, new MyItemInfoBuffer(new ItemInfo[1] { m_CurrAlbumInfo }));
                     base.ExecuteNextStep(_NextType);
                 });
             };
