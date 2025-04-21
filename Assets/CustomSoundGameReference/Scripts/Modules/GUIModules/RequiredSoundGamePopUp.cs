@@ -132,7 +132,6 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         GetLG.enabled = false;
 
 
-
         m_ReCordBG.gameObject.SetActive(true);
         var GetCG = m_ReCordBG.gameObject.CheckComnectComponent<CanvasGroup>();
         DOTween.To(() => GetCG.alpha, x => GetCG.alpha = x, 1f, 0.85f).SetEase(Ease.OutSine);
@@ -143,14 +142,12 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         DOTween.To(() => GetCG_2.alpha, x => GetCG_2.alpha = x, 1f, 0.85f).SetDelay(0.15f).SetEase(Ease.OutSine);
         m_MOutSideBG.DOAnchorPosX(-50, 0.65f).SetDelay(0.15f).SetEase(Ease.OutCirc);
         
-
         int ComplateIDX = 0; int CountIDX = 0; float ApplyDur = 0.2f;
         m_DataMonoMusicICONModules.HForEach(x =>
         {
             x.pp_OGRT.anchoredPosition = new Vector2(x.pp_ICONOGAnhoredPos.x, -400f);
             x.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 1f;
-            //float ApplyDur = (CountIDX + 1) * 0.1f;
-            //Debug.Log(ApplyDur);
+            //float ApplyDur = (CountIDX + 1) * 0.1f; //Debug.Log(ApplyDur);
             x.pp_OGRT.DOAnchorPosY(x.pp_ICONOGAnhoredPos.y, ApplyDur/*UnityEngine.Random.Range(0.55f, 1f)*/).
             SetEase(Ease.OutSine).OnComplete(() => 
             {
