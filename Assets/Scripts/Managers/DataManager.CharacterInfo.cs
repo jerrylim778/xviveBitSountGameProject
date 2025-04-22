@@ -11,9 +11,8 @@ using I_PurifiedAddKey = ControllerBase.I_PurifiedAddKey;
 using I_PurifiedParamsData = ControllerBase.I_PurifiedParamsData;
 
 
-
 //CharacterItemInfo에 관한 Data정보 파싱에 컨테이너 역활 및 데이터 송수신에 관한 시스템 적인것들이 정의됨
-public sealed partial class DataManager : MonoBehaviour
+public sealed partial class DataManager : MonoBehaviour 
 {
     #region DataManager.CharacterInfo에 관한 설명
     //1.엑셀에서 파싱한 스크립터블 데이터들을 타입별로 보관한다
@@ -26,6 +25,8 @@ public sealed partial class DataManager : MonoBehaviour
     //private readonly string m_ResourcesAnimConPath = "Objects/AnimController/CharacterReference/";
     //private readonly string test_ResourcesScriptableJobInfo = "Datas/ScriptableData/SubScriptableData/TemporaryTest_SDataCharacterSkillInfo"; 
     #endregion
+
+    [Space(20f)]
 
     [Header("Character Reference Control")]
     [SerializeField, ShowIf(nameof(test_isAppliedTemporyAll))] private bool test_isShowTempCharacterInfo = false;

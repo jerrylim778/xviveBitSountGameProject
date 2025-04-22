@@ -63,7 +63,7 @@ public class CharacterMyInfo : MyInfo
     }
 
     //¥Ÿ∏•∞Õ¿∏∑Œ ∏Æ∆— ø‰∏¡
-    protected override void ApplyNewSubModule(object _ApplyElem, bool _isSpecApply = false)
+    public override void ApplyNewSubModule(object _ApplyElem, bool _isSpecApply = false)
     {
         if (_ApplyElem is not NewActionInfo  &&
         (spp_SavedUserInfo.s_NewActionInfo == null || !spp_SavedUserInfo.s_NewActionInfo.HasValue)) return;

@@ -745,7 +745,7 @@ MonoBehaviour:
   m_MOutSideBG: {fileID: 2266346763876930406}
   m_MOutSideMusicStopBtn: {fileID: 2463253923881933576}
   m_MOutSideCycleSlider: {fileID: 5596411810727566773}
-  m_DataMonoMuteModulePrefab: {fileID: 1693783891666017704, guid: 690bfa6310b90c14c868423c65a6e895, type: 3}
+  m_DataMonoMuteModulePrefab: {fileID: 3809240382445954174, guid: 603b8e0d2ab288b4cb040a2fd790f5fd, type: 3}
   m_MainScrollRect: {fileID: 5033462415140149234}
   m_ICONModuleBG: {fileID: 8459561070262303876}
   m_DataMonoMusicICONModules: []
@@ -1106,8 +1106,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 25, y: -20}
-  m_SizeDelta: {x: 250, y: 100}
+  m_AnchoredPosition: {x: 30, y: -25}
+  m_SizeDelta: {x: 250, y: 90}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &7809955594695668304
 GameObject:
@@ -1145,7 +1145,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 110, y: 100}
+  m_SizeDelta: {x: 110, y: 90}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &1489693918262259214
 CanvasRenderer:

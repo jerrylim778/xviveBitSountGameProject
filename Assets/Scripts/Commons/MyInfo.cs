@@ -202,7 +202,7 @@ public class MyInfo //: CharacterItemInfo //이건 다른걸로 교체되거나 상속이 아닌
     #endregion
     public virtual ControllerBase[] ApplyModulesByInfo(params ItemInfo[] _ApplyParams) => new ControllerBase[_ApplyParams.Length];
 
-    protected virtual void ApplyNewSubModule(object _ApplyElem, bool _isSpecApply = false) { } //DoNothing.. 혹은 관련된 기본 MyInfo 데이터 넘길것
+    public virtual void ApplyNewSubModule(object _ApplyElem, bool _isSpecApply = false) { } //DoNothing.. 혹은 관련된 기본 MyInfo 데이터 넘길것
 
     //해당 구역에서 로드 이후에 아이템값을 찾는 과정을 코루틴으로 제어할 수 있도록 한다(아이템양이 많을 때를 대비한 조치)
     public virtual void AllMyInfoLoadAndApplyAnyncParsing(System.Action _EndCallBack, out IEnumerator[] _GetCourtines)
@@ -436,6 +436,7 @@ public struct MySavedInfo
     //25-01 새로적용한것들 (변경가능성 존재한다)
     public int stest_SavedTotalScore; //각 MyInfo를 정의하여 해당 구간에 적용하는게 원래 운영 원칙이다
     public UserInfo s_SavedUserDatas;
+    public SoundGameSavedData s_SavedSoundGameInfo;
     //public RunnerPlayInfo s_SavedRunnerPlayInfo; //Runner Project Reference
     //public TYCComprehensiveInfo s_SavedTyconDatas; //Tycon Project Reference
 

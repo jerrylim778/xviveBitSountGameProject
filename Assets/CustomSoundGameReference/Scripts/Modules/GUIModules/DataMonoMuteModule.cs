@@ -6,12 +6,14 @@ using Sirenix.OdinInspector;
 public class DataMonoMuteModule : ModuleMonoBase
 {
     [Header("Required Values")]
+    [SerializeField] private bool m_ApplyNewVer;
     [SerializeField, ReadOnly] private SoundGameController m_GetSoundController;
     [SerializeField, ReadOnly] private ElemSinngerSubController m_GetMainController;
     [SerializeField] private Slider m_WaitMusicSlider;
-    [SerializeField] private Button m_MuteSingleBtn, m_MuteOtherBtn, m_DeleteMusicBtn;
+    [SerializeField, HideIf("m_ApplyNewVer")] private Button m_MuteSingleBtn, m_MuteOtherBtn;
+    [SerializeField, ShowIf("m_ApplyNewVer")] private Button m_DeleteMusicBtn;
 
-    private bool /*m_IsFirst, */m_isBreakPoint;
+    private bool m_isBreakPoint;
     private Button[] m_BtnControllers;
     private System.Action m_EndCallBack;
 
@@ -24,17 +26,26 @@ public class DataMonoMuteModule : ModuleMonoBase
         bool isPlayingNow = (bool)_OtherParams[0];
         m_EndCallBack = _OtherParams[1] as System.Action;
         m_GetSoundController = m_GetMainController.FindParentsObjTypeByTemp<SoundGameController>();
-        m_BtnControllers = new Button[3] { m_MuteSingleBtn, m_MuteOtherBtn, m_DeleteMusicBtn };
-        m_BtnControllers.HForEach(x => x.interactable = false);
+        if (m_ApplyNewVer) m_DeleteMusicBtn.interactable = false;
+        else
+        {
+            m_BtnControllers = new Button[3] { m_MuteSingleBtn, m_MuteOtherBtn, m_DeleteMusicBtn };
+            m_BtnControllers.HForEach(x => x.interactable = false);
+        }
 
         m_DeleteMusicBtn.onClick.AddListener(() =>
         {
-            m_BtnControllers.HForEach(x => x.interactable = false);
+            if (m_ApplyNewVer) m_DeleteMusicBtn.interactable = false; 
+            else m_BtnControllers.HForEach(x => x.interactable = false);
             this.gameObject.SetActive(false);
             m_GetMainController.DeleteThisSound(this);
         });
         m_WaitMusicSlider.gameObject.SetActive(isPlayingNow);
-        if (!isPlayingNow) m_EndCallBack?.Invoke();
+        if (!isPlayingNow)
+        {
+            m_EndCallBack?.Invoke();
+            this.gameObject.SetActive(false);
+        }
     }
 
     public void StartInitAgain() => m_WaitMusicSlider.gameObject.SetActive(true);
@@ -42,7 +53,8 @@ public class DataMonoMuteModule : ModuleMonoBase
     public override void SemiBreakPoint(bool _isBreakPoint)
     {
         m_isProcessAction = _isBreakPoint;
-        m_BtnControllers.HForEach(x => x.interactable = _isBreakPoint);
+        if(!m_ApplyNewVer) m_BtnControllers.HForEach(x => x.interactable = _isBreakPoint);
+        //Tweening 적용하고 나타날것
         m_DeleteMusicBtn.interactable = true;
         //if (m_IsFirst) return; m_IsFirst = true;
     }

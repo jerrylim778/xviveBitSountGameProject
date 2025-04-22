@@ -12,14 +12,21 @@ using System;
 //2.이 음악 엘리먼트는 사운드와 음악 제어를 할 수있도록 하고 음악 모듈을 SFX로 회전한다
 public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //리스너에게 제어가 있는 객체
 {
-    [Header("Control Values")]
+    [Header("Main Control Values")]
+    [SerializeField, ReadOnly] private bool m_isOutPutOldVer;
+
+    [Header("Anim Control Values")]
     [SerializeField] private bool m_isUsedAnim = true;
     [SerializeField, ShowIf("m_isUsedAnim")] private float m_Sensitivity = 5f; // 얼마나 민감하게 반응할지
     [SerializeField, ShowIf("m_isUsedAnim")] private float m_BaseMaxSpeed = 1f; //최대 속도
-    [SerializeField, ReadOnly] private float[] m_Spectrum = new float[64];
+    [SerializeField, ReadOnly, ShowIf("m_isUsedAnim")] private float[] m_Spectrum = new float[64];
     [Header("Required Values")]
     [SerializeField, ReadOnly] private Animator m_MainAnim;
     //[SerializeField, ReadOnly] private RequiredSoundGamePopUp m_GetRPopUp;
+
+    [Header("Control SR Values")]
+    [SerializeField, ReadOnly, ShowIf("@!m_isOutPutOldVer")] private SpriteRenderer m_ApplySubDecorSR;
+    [SerializeField, ReadOnly, ShowIf("@!m_isOutPutOldVer")] private Transform m_ApplyICONPR;
 
     [Tooltip("Apply Values")]
     private DataMonoMusicICONModule m_ReciveModule;
@@ -31,8 +38,8 @@ public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //�
     private Vector3 m_CharacterOGScale;
     private readonly string[] JUMPAIMEARRAY = new string[3] { "Idle", "Jump", "Dance" };
 
-    //[Tooltip("Hiden Support Values")]
-    //private Transform m_SubDecorTR =>
+    [Tooltip("Support Values")]
+    private Sequence[] m_SeqSubDecors;
 
     public int pp_ElemIDX { get; private set; }
     public bool pp_isOn { get => m_ReciveModule != null; }
@@ -43,6 +50,8 @@ public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //�
         var PartParams = base.Initlization(_ParsingParams);
         if (m_isUsedAnim) m_MainAnim = GetComponent<Animator>();
         CallAnimSetByIDX(0);
+        m_isOutPutOldVer =
+        FindParentsObjTypeByTemp<SoundGameController>().pp_isOutPutOldVer;
         m_isTestMode = m_MainController.pp_isTestMode;
         m_CharacterOGScale = this.transform.localScale;
         this.gameObject.SetActive(false);
@@ -54,16 +63,18 @@ public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //�
     public void ElemSinngerOutPutInit(int _ApplyIDX)
     {
         pp_ElemIDX = _ApplyIDX;
-        if (!FindParentsObjTypeByTemp<SoundGameController>().pp_isOutPutOldVer)
+        if (!m_isOutPutOldVer)
         {
             var MainSR = this.GetComponent<SpriteRenderer>();
-            var ApplySubDecorSR = this.transform.GetChild(0).GetComponent<SpriteRenderer>();
+            m_ApplySubDecorSR = this.transform.GetChild(0).GetComponent<SpriteRenderer>();
+            m_ApplyICONPR = this.transform.GetChild(1);
 
             float ApplyDuring = 0.65f;
             MainSR.DOColor(Helper.SetChangeColorAlpha(MainSR.color, 0.8f), ApplyDuring).SetDelay((pp_ElemIDX + 1) * 0.25f).SetEase(Ease.OutSine).OnComplete(() =>
-            ApplySubDecorSR.DOColor(Helper.SetChangeColorAlpha(ApplySubDecorSR.color, 1f), ApplyDuring).SetEase(Ease.OutSine).OnComplete(() =>
-            ApplySubDecorSR.DOColor(Helper.SetChangeColorAlpha(ApplySubDecorSR.color, 0f), ApplyDuring).SetEase(Ease.OutSine).OnComplete(() =>
-            FindParentsObjTypeByTemp<SoundGameController>().I_CheckSubModuleIsAllCanAction(this))));
+            TweeningSubDcor(ApplyDuring, 1f, () => FindParentsObjTypeByTemp<SoundGameController>().I_CheckSubModuleIsAllCanAction(this)));
+            //m_ApplySubDecorSR.DOColor(Helper.SetChangeColorAlpha(m_ApplySubDecorSR.color, 1f), ApplyDuring).SetEase(Ease.OutSine).OnComplete(() =>
+            //m_ApplySubDecorSR.DOColor(Helper.SetChangeColorAlpha(m_ApplySubDecorSR.color, 0f), ApplyDuring).SetEase(Ease.OutSine).OnComplete(() =>
+            //FindParentsObjTypeByTemp<SoundGameController>().I_CheckSubModuleIsAllCanAction(this))));
             return;
         }
         var GetOGPos = this.transform.position;
@@ -111,36 +122,19 @@ public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //�
 
     #endregion
 
-    #region Main System Public Functions (**Linked Mute Module Reference**)
-
-    public void DeleteThisSound(DataMonoMuteModule _CompareModule)
-    {
-        if ((m_ControlMuteModule == null ||
-        !_CompareModule.Equals(m_ControlMuteModule)).HDebug("[오류발생]", Helper.HDType.Error)) return;
-
-        BreakPoint(false, SubModuleBreakType.PartBreak);
-        CallAnimSetByIDX(1);
-        m_ReciveAudioASInfo.StopOrComplate();
-        m_ReciveModule.SemiBreakPoint(true);
-        m_ReciveAudioASInfo = null; m_ReciveModule = null;
-        var GetOGPosY = this.transform.position.y;
-        this.transform.DOMoveY(-0.27f, 0.35f).SetEase(Ease.OutBack).OnComplete(() =>
-        this.transform.DOMoveY(GetOGPosY, 0.35f).SetEase(Ease.OutBack).OnComplete(() =>
-        CallAnimSetByIDX(0)));
-    }
-
-    #endregion
-
     #region Main System Sub Functions (**Apply Infos**)
+
+    //SoundGameController => ElemSinngerSubController Order
     public void ApplyAudioInfos(DataMonoMusicICONModule _GetModule)
     {
         if (pp_isOn) return;
-        bool isPlayingNow =
-        FindParentsObjTypeByTemp<SoundGameController>().PlayingNow();
-        bool isMusicOn =
-        FindParentsObjTypeByTemp<SoundGameController>().pp_isMusicOn;
+        var GetSoundCon = FindParentsObjTypeByTemp<SoundGameController>();
+        bool isPlayingNow = GetSoundCon.PlayingNow();
+        bool isMusicOn = GetSoundCon.pp_isMusicOn;
         m_ReciveModule = _GetModule;
         m_ReciveModule.SemiBreakPoint(false);
+        GetSoundCon.ChangedDataAndActionEvent(true, _GetModule.m_ItemIDX);
+        NewProductionICON(_GetModule.pp_SoundGameClipInfo.s_SpriteArray[0]);
 
         //음악 라운드 킬 + 음악 컨트롤러(AudioASInfo) 생성한다
         m_ReciveAudioASInfo =
@@ -148,12 +142,16 @@ public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //�
         _GetModule.pp_SoundGameClipInfo.s_ItemName, AudioType.GameSFX, _GetModule.pp_SoundGameClipInfo.s_AudioClipsInfo[0], this);
         m_ReciveAudioASInfo.ElemSoundPlayOrPause(false);
 
+        #region Check ApplyModule Reference
         if (m_ControlMuteModule == null)
         {
             m_ControlMuteModule =
-            FindParentsObjTypeByTemp<SoundGameController>().pp_RequiredSoundGamePopUp.
-            InstanceDataMonoMuteModule(this.transform);
-            System.Action EndCallBack = () => BreakPoint(isMusicOn);
+            GetSoundCon.pp_RequiredSoundGamePopUp.InstanceDataMonoMuteModule(this.transform);
+            System.Action EndCallBack = () =>
+            {
+                BreakPoint(isMusicOn);
+                NewProductionAfterICON();
+            };
             m_ControlMuteModule.Initlization(this, isPlayingNow, EndCallBack);
         }
         else
@@ -163,13 +161,38 @@ public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //�
             else BreakPoint(isMusicOn);
         }
         m_ControlMuteModule.SemiBreakPoint(true);
+        #endregion
+    }
+
+    //DataMonoMuteModule => ElemSinngerSubController Order
+    public void DeleteThisSound(DataMonoMuteModule _CompareModule)
+    {
+        if ((m_ControlMuteModule == null ||
+        !_CompareModule.Equals(m_ControlMuteModule)).HDebug("[오류발생]", Helper.HDType.Error)) return;
+
+        int RDItemIDX = m_ReciveModule.m_ItemIDX;
+        var GetSoundCon = FindParentsObjTypeByTemp<SoundGameController>();
+        BreakPoint(false, SubModuleBreakType.PartBreak);
+        CallAnimSetByIDX(1);
+        m_ReciveAudioASInfo.StopOrComplate();
+        m_ReciveModule.SemiBreakPoint(true);
+        m_ReciveAudioASInfo = null; m_ReciveModule = null;
+        GetSoundCon.ChangedDataAndActionEvent(false, RDItemIDX);
+        NewProductionICON();
+
+        if (m_isUsedAnim)
+        {
+            var GetOGPosY = this.transform.position.y;
+            this.transform.DOMoveY(-0.27f, 0.35f).SetEase(Ease.OutBack).OnComplete(() =>
+            this.transform.DOMoveY(GetOGPosY, 0.35f).SetEase(Ease.OutBack).OnComplete(() =>
+            CallAnimSetByIDX(0)));
+        }
     }
 
     public void ShowMuteModule(bool _isOn)
     {
         if (m_ControlMuteModule == null ||
         m_ControlMuteModule.pp_isReadyToSlider) return;
-
         m_ControlMuteModule.gameObject.SetActive(_isOn);
     }
 
@@ -230,12 +253,56 @@ public class ElemSinngerSubController : SubModuleControllerBase, I_OwnerShip //�
     }
     #endregion
 
+    #region Sub System Private Functions (**New Production Reference**)
+
+    private void NewProductionICON(Sprite _ApplySpr =null)
+    {
+        if (m_isOutPutOldVer) return;
+        bool isOnStay = _ApplySpr != null;
+        var ApplySR = m_ApplyICONPR.GetChild(0).GetComponent<SpriteRenderer>();
+        ApplySR.sprite = _ApplySpr;
+        //if(isOnStay) TweeningSubDcor(0.5f, 0.7f);
+        m_ApplyICONPR.gameObject.SetActive(isOnStay);
+    }
+
+    private void NewProductionAfterICON()
+    {
+        if (m_isOutPutOldVer || !pp_isOn) return;
+        var SubDcorSR = m_ApplyICONPR.GetChild(1).GetComponent<SpriteRenderer>();
+    }
+    
+    private void TweeningSubDcor(float _ApplyDuring, float _MaxUpScaleValue, System.Action _EndCallBack = null)
+    {
+        if (m_SeqSubDecors == null) m_SeqSubDecors = new Sequence[2];
+        m_SeqSubDecors.HForEach(x => x.ResetSequce(true));
+        m_SeqSubDecors[0] = DOTween.Sequence();
+        m_SeqSubDecors[0].Append(
+        m_ApplySubDecorSR.DOColor(Helper.SetChangeColorAlpha(m_ApplySubDecorSR.color, _MaxUpScaleValue), _ApplyDuring).SetEase(Ease.OutSine));
+        m_SeqSubDecors[0].OnComplete(() =>
+        {
+            m_SeqSubDecors[1] = DOTween.Sequence();
+            m_SeqSubDecors[1].Append(
+            m_ApplySubDecorSR.DOColor(Helper.SetChangeColorAlpha(m_ApplySubDecorSR.color, 0f), _ApplyDuring).SetEase(Ease.OutSine));
+            m_SeqSubDecors[1].OnComplete(() => _EndCallBack?.Invoke());
+        });
+    }
+
+    #endregion
+
     public override void ProcessUpdate()
     {
         base.ProcessUpdate();
 
+        if(m_isOutPutOldVer)
         this.transform.localScale = Vector3.Lerp(this.transform.localScale, m_isUpdateUpScale ?
         m_CharacterOGScale * 1.35f : m_CharacterOGScale, Time.deltaTime * 10f);
+        else
+        {
+            var GetColor = m_ApplySubDecorSR.color;
+            GetColor.a = Mathf.Lerp(GetColor.a, 
+            m_isUpdateUpScale ? 0.7f : 0f, Time.deltaTime * 10f);
+            m_ApplySubDecorSR.color = GetColor;
+        }
 
         if (!m_isActionProcess) return;
 

@@ -102,7 +102,7 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
         GamePlaySystem.Instance.pp_UsingMainCan.GetComponent<RectTransform>(), screenPos, null, out canvasLocalPos))
         {
-            canvasLocalPos.y -= 30f;
+            canvasLocalPos.y -= 10f;
             GetModulePrefab.GetComponent<RectTransform>().anchoredPosition = canvasLocalPos;
         }
         

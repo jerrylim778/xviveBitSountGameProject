@@ -26,7 +26,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
     [SerializeField] private Color m_EmptyColor;
     [SerializeField] private GUIAlbumModule m_CurrAlbumModulePrefab;
     [SerializeField, ReadOnly] private AudioMixVisualizeSubController m_AudioMixVisualizeSubController;
-    [SerializeField] private List<AlbumInfo> m_AlbumInfos = new(); //이후에 반드시 스크립터블 데이터화 진행할것
+    private List<AlbumInfo> m_AlbumInfos = new(); //이후에 반드시 스크립터블 데이터화 진행할것
 
     private bool m_isFirst = false;
 
@@ -36,6 +36,8 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
         if (!m_isFirst)
         {
             m_isFirst = true;
+            m_AlbumInfos = 
+            Appinstance.Instance.ms_DataManager.spp_DSDataAlbumInfo.pp_DSAlbumLevelInfos;
             m_CurrAlbumInfo = m_AlbumInfos[0];
             m_LeftArrowBtn.onClick.AddListener(() => OnClickArrowBtn(false));
             m_LeftArrowBtn.onClick.AddListener(() => OnClickArrowBtn(true));
@@ -74,13 +76,6 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
 
     #region Main System Private Functions
 
-    private void BtnReset(bool _isOn)
-    {
-        m_LeftArrowBtn.interactable = _isOn;
-        m_RightArrowBtn.interactable = _isOn;
-        m_SelectBtn.interactable = _isOn;
-    }
-
     private void ApplyInfos(AlbumInfo _CurrAlbumInfo, System.Action _EndCallBack = null)
     {
         m_MapModuleBG = FindAnyObjectByType<SoundGameController>().pp_MainMapModuleBase;
@@ -106,6 +101,8 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
     {
         
     }
+
+    #region 오디오 이퀄라이저 적용 로직
 
     private void InitAudioBaouns(bool _isAdd, AlbumInfo _CurrAlbumInfo = null)
     {
@@ -139,6 +136,17 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
 
     #endregion
 
+    #endregion
+
+    #region Sub System Private Functions
+
+    private void BtnReset(bool _isOn)
+    {
+        m_LeftArrowBtn.interactable = _isOn;
+        m_RightArrowBtn.interactable = _isOn;
+        m_SelectBtn.interactable = _isOn;
+    }
+
     private void AfterProductionCamAndGUI(bool _isReturn, float _SetDelay = 0f, System.Action _EndCallBack = null)
     {
         var GetCamPCon = FindAnyObjectByType<CameraProductionSubController>();
@@ -147,10 +155,16 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
         _EndCallBack?.Invoke());
     }
 
+    #endregion
+
     public override void ExecuteNextStep(SystemInfoType _NextType)
     {
         BtnReset(false);
         m_isPartControllSystem = false;
+        var GetDataManager = Appinstance.Instance.ms_DataManager;
+        var GetMyInfo  = GetDataManager.TempInitSoundGameMyInfo();
+        GetMyInfo.AllMyInfoLoadAndApplyAnyncParsing(null, out System.Collections.IEnumerator[] _GetOutCour);
+
         if (_NextType == SystemInfoType.NoneMainGUI)
         {
             System.Action EndCallBack = () =>
