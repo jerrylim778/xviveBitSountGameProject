@@ -30,14 +30,14 @@ public class CameraProductionSubController : SubModuleControllerBase
         return null;
     }
 
-    public void MoveStageTweeningCam(float _MovePosY, float _SetDelay, System.Action _EndCallBack = null)
+    public void MoveStageTweeningCam(float _MovePosY, float _SetDelay, bool _isReturnBack = false, System.Action _EndCallBack = null)
     {
         m_MoveCamSeq.ResetSequce();
         m_MoveCamSeq = DOTween.Sequence();
 
-        m_MoveCamSeq.Append(
-        this.transform.DOMoveY(_MovePosY, 1.2f).SetDelay(_SetDelay).SetEase(Ease.OutSine).SetEase(Ease.OutBack).
-        OnComplete(() => _EndCallBack?.Invoke()));
+        if(_isReturnBack) m_MoveCamSeq.Append(this.transform.DOMoveY(_MovePosY, 1f).SetDelay(_SetDelay).SetEase(Ease.OutSine));
+        else m_MoveCamSeq.Append(this.transform.DOMoveY(_MovePosY, 1.2f).SetDelay(_SetDelay).SetEase(Ease.OutSine).SetEase(Ease.OutBack));
+        m_MoveCamSeq.OnComplete(() => _EndCallBack?.Invoke()); 
     }
 
     public void CamFullScreenTweeningMat(bool _isOn)
@@ -74,7 +74,6 @@ public class CameraProductionSubController : SubModuleControllerBase
         #endregion
 
         _Value = Mathf.Abs(_Value - targetMax);
-        Debug.Log(_Value);
         if (m_CamMatSeq != null) m_CamMatSeq.ResetSequce();
 
         float ClampValue = Mathf.Clamp(_Value, targetMin, targetMax);

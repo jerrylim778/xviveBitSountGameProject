@@ -48,6 +48,11 @@ public class MonoReciveASClipByBitInfos : MonoBehaviour
     private void ForceApplyGameInfo()
     => m_AudioClipSpectrumExtractor.ForceApplyGameInfo();
 
+    [ContextMenu(nameof(ForceApplyLevelInfo))]
+    private void ForceApplyLevelInfo()
+    => m_AudioClipSpectrumExtractor.ForceApplyAlbumInfo();
+
+
     // Update is called once per frame
     void Update()
     {

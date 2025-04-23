@@ -678,7 +678,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &404433625
 RectTransform:
   m_ObjectHideFlags: 0
@@ -749,6 +749,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_isTestMode: 1
+  m_isUsedLocalProduction: 0
   m_MainModuleMonoBase: {fileID: 0}
   m_OutPutAudioEqulType: 0
   m_LerpSped: 5
@@ -998,7 +999,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &659167300
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1038,6 +1039,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_isTestMode: 1
+  m_isUsedLocalProduction: 0
   m_MainModuleMonoBase: {fileID: 0}
   m_OutPutAudioEqulType: 1
   m_LerpSped: 800
@@ -1144,7 +1146,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &694967933
 Transform:
   m_ObjectHideFlags: 0
@@ -75950,7 +75952,6 @@ MonoBehaviour:
         - 0.00028954755
         - 0.00029187967
         - 0
-    m_isListenMusic: 0
   - m_AudioSource: {fileID: 1544130104}
     m_ASClipInfo:
       s_ItemIDX: 100
@@ -107882,7 +107883,6 @@ MonoBehaviour:
         - 0.000580504
         - 0.0005790518
         - 0
-    m_isListenMusic: 0
   - m_AudioSource: {fileID: 1602993128}
     m_ASClipInfo:
       s_ItemIDX: 101
@@ -136239,7 +136239,6 @@ MonoBehaviour:
         - 4.804425e-12
         - 9.5958085e-12
         - 0
-    m_isListenMusic: 0
   m_OutPutAudioEqulList: []
   audioSources: []
   fftWindow: 5
@@ -136381,8 +136380,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 469ea4c52b6481d4db82f98d8f55b6be, type: 3}
-  m_Resource: {fileID: 8300000, guid: 469ea4c52b6481d4db82f98d8f55b6be, type: 3}
+  m_audioClip: {fileID: 8300000, guid: b1572fef362b5b9418384aa136c0a935, type: 3}
+  m_Resource: {fileID: 8300000, guid: b1572fef362b5b9418384aa136c0a935, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -136718,7 +136717,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1505116610
 RectTransform:
   m_ObjectHideFlags: 0
@@ -136758,6 +136757,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_isTestMode: 1
+  m_isUsedLocalProduction: 0
   m_MainModuleMonoBase: {fileID: 0}
   m_OutPutAudioEqulType: 1
   m_LerpSped: 800

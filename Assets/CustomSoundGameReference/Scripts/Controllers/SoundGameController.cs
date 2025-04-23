@@ -29,18 +29,23 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
     [Header("Sound Level Values")]
     [SerializeField, ReadOnly] private SoundGameMyInfo m_SoundGameMyInfo;
     [SerializeField, ReadOnly] private AudioASInfo m_CurrAudioASinfo;
-    [SerializeField, ReadOnly] private ElemASBuffer m_CurrElemASBuffer;
+    /*[SerializeField, ReadOnly] */private ElemASBuffer m_CurrElemASBuffer;
     [SerializeField] private SDataSoundGameInfo m_SDataSoundGameInfo;
+
+    [Tooltip("Support Values")]
+    private SpriteRenderer m_MainSR;
+    private Vector3 m_MainSROGPos;
 
 
     [Tooltip("Control Values")]
-    //private bool m_isFirst;
+    private bool m_isNotFirst;
     private int m_SubModuleInitCount;
     private float m_CurrDSPRunTime, m_DirBeforeCycleCurrTime;
     private double m_DSPTimeNow, m_PauseStartTime, m_TotalPausedDuration;
     [Tooltip("Required Values")]
     private AlbumInfo m_CurrAlbumInfo; //전용 MyInfo를 만들어 이전 요망 **
     private System.Action<PlayConditionType> m_MainConditionCallBack;
+    private TemporyApplySubControllerInfos m_TempASCInfo;
 
     //Property
     public bool pp_isOutPutOldVer => m_isOutPutOldVer;
@@ -56,14 +61,16 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
 
     public override object[] Initlization(params object[] _ParsingParams)
     {
-        TemporyApplySubControllerInfos TempASCInfo = default(TemporyApplySubControllerInfos);
-        
-        CheckAndApplyByParams<MyInfo>(_ParsingParams, x => m_ReciveMyInfo = x); //이후 SoundGameController전용 MyInfo를 만들어서 해당구역에서 ItemInfo를 추출할것
-        //CheckAndApplyByParams<AlbumInfo>(_ParsingParams, x => m_CurrAlbumInfo = x); //원래는 MyInfo에 적용되어야 한다
-        CheckAndApplyByParams<System.Action<PlayConditionType>>(_ParsingParams, x => m_MainConditionCallBack = x);
-        CheckAndApplyByParams<TemporyApplySubControllerInfos>(_ParsingParams, x => TempASCInfo = x);
+        m_SubModuleInitCount = 0;
+        if (!m_isNotFirst)
+        {
+            m_TempASCInfo = default(TemporyApplySubControllerInfos);
+            CheckAndApplyByParams<MyInfo>(_ParsingParams, x => m_ReciveMyInfo = x); 
+            CheckAndApplyByParams<System.Action<PlayConditionType>>(_ParsingParams, x => m_MainConditionCallBack = x);
+            CheckAndApplyByParams<TemporyApplySubControllerInfos>(_ParsingParams, x => m_TempASCInfo = x);
+        }
         #region Only TestMode Init
-        if (Appinstance.Instance != null) //전부 MyInfo에서 처리해서 가져와야함
+        if (!m_isNotFirst && Appinstance.Instance != null) //전부 MyInfo에서 처리해서 가져와야함
         {
             if (m_ReciveMyInfo == null)
             {
@@ -71,53 +78,55 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
                 m_CurrentLevel = 1;
             }
 
-            if (!TempASCInfo.s_PairParamDatas.CheckArrayNull(0) || !TempASCInfo.s_PairParamDatas.HExist(x => x.Item1 is
+            if (!m_TempASCInfo.s_PairParamDatas.CheckArrayNull(0) || !m_TempASCInfo.s_PairParamDatas.HExist(x => x.Item1 is
              RenewalCinemachineCameraController) || FindAnyObjectByType<RenewalCinemachineCameraController>() != null)
             {
-                TempASCInfo.s_PairParamDatas = new();
+                m_TempASCInfo.s_PairParamDatas = new();
                 I_PurifiedParamsData GetParamsModel = null;
                 var GetRCamController = Appinstance.Instance.ms_DataManager.
                 GetCompareComponent<RenewalCinemachineCameraController>(true, CameraController.ViewType.TPS.ToString(), ref GetParamsModel);
-                TempASCInfo.s_PairParamDatas.Add(new(GetRCamController, GetParamsModel));
+                m_TempASCInfo.s_PairParamDatas.Add(new(GetRCamController, GetParamsModel));
             }
 
-            if(!TempASCInfo.s_PairParamDatas.CheckArrayNull(0) || !TempASCInfo.s_PairParamDatas.HExist(x => x.Item1 is
+            if(!m_TempASCInfo.s_PairParamDatas.CheckArrayNull(0) || !m_TempASCInfo.s_PairParamDatas.HExist(x => x.Item1 is
              AudioListenrtRecordSubController) || FindAnyObjectByType<AudioListenrtRecordSubController>() != null)
             {
-                TempASCInfo.s_PairParamDatas = new();
-                TempASCInfo.s_PairParamDatas.Add(new(
+                m_TempASCInfo.s_PairParamDatas = new();
+                m_TempASCInfo.s_PairParamDatas.Add(new(
                 FindAnyObjectByType<SimpleCameraController>().GetComponent<AudioListenrtRecordSubController>(), null));
-                TempASCInfo.s_PairParamDatas.Add(new(
+                m_TempASCInfo.s_PairParamDatas.Add(new(
                 FindAnyObjectByType<SimpleCameraController>().GetComponent<CameraProductionSubController>(), null));
             }
         }
         #endregion
         #region Recive MyInfo Data To Map Module Parsing Init 
-        m_SoundGameMyInfo = m_ReciveMyInfo as SoundGameMyInfo;
-        m_CurrAlbumInfo = m_SoundGameMyInfo.spp_SavedAlbumInfo;
-        //m_SDataSoundGameInfo.SubDScriptableInit();
-        var ApplyAudioMixer = this.transform.ChildLinearStuctureSearch<AudioMixVisualizeSubController>()[0];
-        TempASCInfo.s_PairParamDatas.Add(new(ApplyAudioMixer, null));
-
-        var GetGaugeCon = pp_MainMapModuleByVersion.ChildLinearStuctureSearch<SoundGaugeSubController>()[0];
-        TempASCInfo.s_PairParamDatas.Add(new(GetGaugeCon, null));
-
-        pp_MainMapModuleByVersion.ChildLinearStuctureSearch<ElemSinngerSubController>().HForEach(x =>
+        if (!m_isNotFirst)
         {
-            m_GetCurrSinngerSubControllers.Add(x);
-            TempASCInfo.s_PairParamDatas.Add(new(x, null));
-        });
+            m_SoundGameMyInfo = m_ReciveMyInfo as SoundGameMyInfo;
+            m_CurrAlbumInfo = m_SoundGameMyInfo.spp_SavedAlbumInfo;
+            //m_SDataSoundGameInfo.SubDScriptableInit();
+            var ApplyAudioMixer = this.transform.ChildLinearStuctureSearch<AudioMixVisualizeSubController>()[0];
+            m_TempASCInfo.s_PairParamDatas.Add(new(ApplyAudioMixer, null));
 
+            var GetGaugeCon = pp_MainMapModuleByVersion.ChildLinearStuctureSearch<SoundGaugeSubController>()[0];
+            m_TempASCInfo.s_PairParamDatas.Add(new(GetGaugeCon, null));
+
+            pp_MainMapModuleByVersion.ChildLinearStuctureSearch<ElemSinngerSubController>().HForEach(x =>
+            {
+                m_GetCurrSinngerSubControllers.Add(x);
+                m_TempASCInfo.s_PairParamDatas.Add(new(x, null));
+            });
+        }
         #endregion
         #region Data Apply to Controller Init
-        var GetCallBacks = new System.Action[TempASCInfo.s_PairParamDatas.Count];
-        int CountIDX = 0; TempASCInfo.s_PairParamDatas.ForEach(x =>
+        var GetCallBacks = new System.Action[m_TempASCInfo.s_PairParamDatas.Count];
+        int CountIDX = 0; m_TempASCInfo.s_PairParamDatas.ForEach(x =>
         {
             var GetSubModuleController =
             x.Item1.pp_isInstanceOnlyOnce ? x.Item1 : Instantiate(x.Item1, this.transform);
             //if (GetSubModuleController is I_FlyKnifeSliceModule) pp_InstanceFlyKnifeModule = GetSubModuleController;
             GetSubModuleController.gameObject.SetActive(true);
-            m_GetMainSubControllerBases.Add(GetSubModuleController);
+            if(!m_isNotFirst) m_GetMainSubControllerBases.Add(GetSubModuleController);
             GetCallBacks[CountIDX] = () => GetSubModuleController.Initlization(this, x.Item2);
             CountIDX++;
         });
@@ -146,14 +155,37 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
             if (m_isOutPutOldVer) OldProductionSoundGameController();
             else StartCoroutine(NewProductionSoundGameController());
         }));
+        m_isNotFirst = true;
         return null;
+    }
+
+    public void BeforeInitByOutPost()
+    {
+        Helper.ChildLinearStuctureSearch(pp_MainMapModuleByVersion).HForEach(x => x.gameObject.SetActive(false));
+    }
+
+    public override void CallEndController(bool _isSubCheck, I_Data AppliedDataSet = null)
+    {
+        base.CallEndController(_isSubCheck, AppliedDataSet);
+        Appinstance.Instance.ms_AudioManager.PlaySound("BackSpaceSound");
+        ForcePlayOrStopOrder(false);
+        System.Action EndCallBack = () => 
+        {
+            if (!_isSubCheck)
+            {
+                GamePlaySystem.Instance.FindModuleByTemp<GUIMB_SelectCategoryMusic>().BeforeInitByOutPost(false);
+                GamePlaySystem.Instance.ExecuteOutPutSystemBase(SystemInfoType.Test_GUIMB_SoundGameProjectSelectMusic);
+            }
+        };
+        StartCoroutine(NewProductionEndSoundGameController(_isSubCheck, EndCallBack));
     }
 
     public override void ForcePlayOrStopOrder(bool _isPlay)
     {
         base.ForcePlayOrStopOrder(_isPlay);
         m_WPSticksEqulizer.SemiBreakPoint(true);
-        m_RequiredSoundGamePopUp.BreakPoint(_isPlay);
+        m_RequiredSoundGamePopUp?.BreakPoint(_isPlay);
+        if (m_CurrAudioASinfo != null) m_CurrAudioASinfo.ElemSoundPlayOrPause(_isPlay);
         m_GetMainSubControllerBases.ForEach(x => x.BreakPoint(_isPlay));
     }
 
@@ -187,6 +219,8 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
         var ApplyMainICONPR = pp_MainMapModuleByVersion.GetChild(0).GetChild(0);
         //var ReturnMainOGScale = MainSR.transform.localScale;
         //MainSR.transform.localScale = ReturnMainOGScale * 0.2f;
+        m_MainSR = MainSR;
+        m_MainSROGPos = m_MainSR.transform.position;
 
         MainSR.color = Helper.SetChangeColorAlpha(MainSR.color, 0f);
         MainParticle.Stop();
@@ -204,11 +238,14 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
         #endregion
 
         yield return new WaitForSeconds(0.8f);
+        #region Tweening Action
         bool isWaitOpenMain = false;
         MainSR.gameObject.SetActive(true);
         //MainSR.transform.DOScale(ReturnMainOGScale, 0.65f).SetEase(Ease.InOutSine);
         MainSR.DOColor(Helper.SetChangeColorAlpha(MainSR.color, 1f), 0.85f).SetEase(Ease.InOutSine).OnComplete(() =>
         {
+            MainBGShakeWithCustomStrength(0.4f);
+            //MainSR.transform.doshake
             m_WPSticksEqulizer.gameObject.SetActive(true);
             InitAudioBaouns(true, m_CurrAlbumInfo, () => GamePlaySystem.Instance.MainPopUpPush<RequiredSoundGamePopUp>());
             ApplyMainICONPR.gameObject.SetActive(true);
@@ -226,12 +263,31 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
             isWaitOpenMain = true;
             I_CheckSubModuleIsAllCanAction(this);
         });
+        #endregion
 
         yield return new WaitUntil(() => isWaitOpenMain);
         yield return new WaitForSeconds(1.8f);
 
         I_GetSubModule<SoundGaugeSubController>().ElemSinngerOutPutInit();
     }
+
+    IEnumerator NewProductionEndSoundGameController(bool _isNextStage, System.Action _EndCallback)
+    {
+        bool isWaitComplate1 = false, isWaitComplate2 = false;
+        var MainParticle = pp_MainMapModuleByVersion.GetChild(1).GetComponent<ParticleSystem>();
+        MainParticle.Stop();
+        InitAudioBaouns(false);
+        I_GetSubModule<CameraProductionSubController>().CamFullScreenActionMat(0f);
+        m_GetCurrSinngerSubControllers.ForEach(x => { if (x.pp_isOn) x.DeleteThisSound(); });
+        GamePlaySystem.Instance.MainPopUpPop<RequiredSoundGamePopUp>(() => isWaitComplate1 = true);
+        m_WPSticksEqulizer.ActionBeforeOutPutProduction(false, () => isWaitComplate2 = true);
+        yield return new WaitUntil(() => isWaitComplate1 && isWaitComplate2);
+        _EndCallback?.Invoke();
+    }
+
+
+
+    #region Old Version Reference
 
     public void OldProductionSoundGameController()
     {
@@ -252,6 +308,9 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
             I_CheckSubModuleIsAllCanAction(this);
         }));
     }
+
+    #endregion
+
     #endregion
 
     #region Main System Private Functions 
@@ -272,6 +331,7 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
         else m_PauseStartTime = AudioSettings.dspTime;
 
         m_GetCurrSinngerSubControllers.ForEach(x => { if (x.pp_isOn) x.BreakPoint(pp_isMusicOn); });
+        m_CurrAudioASinfo.ElemSoundPlayOrPause(pp_isMusicOn);
 
         return pp_isMusicOn;
     }
@@ -280,10 +340,10 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
 
     #region Main System Private Functions (**Data Reference**)
 
-    public void ChangedDataAndActionEvent(bool _isAdd, int _ApplyItemIDX)
+    public void ChangedDataAndActionEvent(bool _isAdd, int _ApplyItemIDX, ElemASBuffer _ApplyBuffer)
     {
         var ElemIDXs = m_SoundGameMyInfo.spp_SavedSoundUserInfo.s_SavedElemItemIDX;
-        if (ElemIDXs.ISArrayFindIDXCondition(x => x == _ApplyItemIDX, out int _OutPutIDX))
+        if (ElemIDXs.ISArrayFindCondition(x => x == _ApplyItemIDX, out int _OutPutIDX))
         {
             if (_isAdd.HDebug("이미 저장된 인덱스 입니다.!", Helper.HDType.Error)) return;
             ElemIDXs = ElemIDXs.Where(x => x != _OutPutIDX).ToArray();
@@ -291,24 +351,28 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
         else
         {
             if ((!_isAdd).HDebug($"저장되지 않는 인덱스 {_ApplyItemIDX} 입니다,!", Helper.HDType.Error)) return;
-            ElemIDXs.Concat(new[] { _ApplyItemIDX });
+            ElemIDXs = ElemIDXs.Concat(new[] { _ApplyItemIDX }).ToArray();
         }
 
         //묶여있던 여러 이벤트들을 발동할것 (게이지 부터 진행할것)
+        if(_isAdd) MainBGShakeWithCustomStrength(0.2f);
         I_GetSubModule<SoundGaugeSubController>().ApplySoundStack(_isAdd);
-        m_SoundGameMyInfo.ApplyNewSubModule(ElemIDXs);
+        var GetAudioMix = I_GetSubModule<AudioMixVisualizeSubController>();
+        if (_isAdd) GetAudioMix.AddAudioSource(_ApplyBuffer); 
+        else GetAudioMix.RemoveAudioSource(_ApplyBuffer);
+        m_SoundGameMyInfo.ApplyNewSubModule(ElemIDXs); //어차피 전부 삭제해야됨
     }
 
     private void InitAudioBaouns(bool _isAdd, AlbumInfo _CurrAlbumInfo = null, System.Action _EndCallBack = null)
     {
-        if (_isAdd) m_CurrAudioASinfo = Appinstance.Instance.ms_AudioManager.PlaySound(true,
-        _CurrAlbumInfo.m_MainClipBGM.s_isLoop, _CurrAlbumInfo.m_MainClipBGM.s_ItemName,
+        if (_isAdd) m_CurrAudioASinfo = Appinstance.Instance.ms_AudioManager.PlaySound(false,
+        _CurrAlbumInfo.m_MainClipBGM.s_isLoop, _CurrAlbumInfo.m_MainClipBGM.s_ItemName, 0.6f, 
         AudioType.BGM, _CurrAlbumInfo.m_MainClipBGM.s_AudioClipsInfo[0], this);
 
         var ApplyMixerCon = I_GetSubModule<AudioMixVisualizeSubController>();
         if (_isAdd)
         {
-            m_CurrElemASBuffer = new ElemASBuffer(false, m_CurrAudioASinfo.s_AudioSource, _CurrAlbumInfo.m_MainClipBGM);
+            m_CurrElemASBuffer = new ElemASBuffer(/*false,*/ m_CurrAudioASinfo.s_AudioSource, _CurrAlbumInfo.m_MainClipBGM);
             ApplyMixerCon.AddAudioSource(m_CurrElemASBuffer);
         }
         else ApplyMixerCon.RemoveAudioSource(m_CurrElemASBuffer);
@@ -363,7 +427,7 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
 
         #region 포인트 다운시 조건에 맞는 이벤트
         if (Input.GetMouseButtonDown(0) && UpdateMobileRayCast(ref _GetOutController) &&
-        m_RequiredSoundGamePopUp.pp_SelectCurrModule == null)
+        m_RequiredSoundGamePopUp?.pp_SelectCurrModule == null)
         {
             m_GetCurrSinngerSubControllers.HForEach(x => x.ShowMuteModule(false));
             if(_GetOutController.pp_isOn) _GetOutController.ShowMuteModule(true);
@@ -372,15 +436,15 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
 
         #region 드래그 시 조건에 맞는 이벤트
         if (UpdateMobileRayCast(ref _GetOutController) &&
-        m_RequiredSoundGamePopUp.pp_SelectCurrModule != null && !_GetOutController.pp_isOn)
+        m_RequiredSoundGamePopUp?.pp_SelectCurrModule != null && !_GetOutController.pp_isOn)
         {
             _GetOutController.OffCharacterDragEvent(true);
-            m_RequiredSoundGamePopUp.pp_SelectCurrModule.DragEvent(true);
+            m_RequiredSoundGamePopUp?.pp_SelectCurrModule.DragEvent(true);
         }
         else
         {
-            if(m_RequiredSoundGamePopUp.pp_SelectCurrModule != null) 
-            m_RequiredSoundGamePopUp.pp_SelectCurrModule.DragEvent(false);
+            if(m_RequiredSoundGamePopUp?.pp_SelectCurrModule != null)
+            m_RequiredSoundGamePopUp?.pp_SelectCurrModule.DragEvent(false);
             m_GetCurrSinngerSubControllers.ForEach(x => x.OffCharacterDragEvent(false));
         }
         #endregion
@@ -496,6 +560,17 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
         Helper.HCountForEach(GetIDX, _isCol ? GetIDX * 2 - 1 : GetIDX * 2, _CountIDX => RHalfList.Add(_GetList[_CountIDX]));
         LHalfList.Reverse();
         return new List<List<T>>(2){ LHalfList, RHalfList };
+    }
+
+    public void MainBGShakeWithCustomStrength(float strength)
+    {
+        // 진행 중인 트윈이 있다면 중지
+        m_MainSR.transform.DOKill();
+        m_MainSR.transform.position = m_MainSROGPos;
+        m_MainSR.transform.DOShakePosition(0.4f, strength).SetEase(Ease.OutQuad).OnComplete(() =>
+        m_MainSR.transform.position = m_MainSROGPos);
+        //m_MainSR.transform.DOShakePosition(0.2f,
+        //strength, 1.5f, 0.5f, false, true ).OnComplete(() => { transform.position = m_MainSROGPos; });
     }
 
     #endregion

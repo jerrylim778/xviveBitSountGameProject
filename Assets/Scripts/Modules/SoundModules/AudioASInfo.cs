@@ -80,7 +80,12 @@ public class AudioASInfo
         spp_DSPTimeNow = AudioSettings.dspTime;
         spp_MaxPlayFreame = s_AudioInfo.Value.s_AudioClip.length * 60f;
         InitSubControlByASInfo(true);
-        if (_isDirPlay) s_AudioSource.Play();
+        if (_isDirPlay)
+        {
+            //if(s_AudioSource.isPlaying)
+            s_AudioSource.Stop(); s_AudioSource.Play();
+        }
+        //else s_AudioSource.Stop();
     }
 
     public void StopOrComplate(System.Action _EndCallBack = null)
@@ -98,8 +103,13 @@ public class AudioASInfo
     {
         if (_isOn)
         {
-            if (!s_AudioSource.isPlaying) s_AudioSource.Play();
-            else s_AudioSource.UnPause();
+            if (!s_AudioSource.isPlaying)
+            {
+                s_AudioSource.Stop();
+                s_AudioSource.Play();
+            }
+            else 
+                s_AudioSource.UnPause();
             return;
         }
         if (spp_isPlaying && _ApplyEffect != null)

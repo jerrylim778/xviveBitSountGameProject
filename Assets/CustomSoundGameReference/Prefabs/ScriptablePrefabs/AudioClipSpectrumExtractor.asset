@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7679870048239514392128a464604801, type: 3}
   m_Name: AudioClipSpectrumExtractor
   m_EditorClassIdentifier: 
+  m_AlbumLevelGameInfo: {fileID: 11400000, guid: 01c5f60d2d6e6bc41b7e8f9cda7b6a22, type: 2}
   m_SDataSoundGameInfo: {fileID: 11400000, guid: 241e7b167f9478444a5739132e126963, type: 2}
   m_WebClipBitSavedInfo:
   - s_SetClips: {fileID: 8300000, guid: 6737a48860b180847a147f62866b1628, type: 3}

@@ -5,17 +5,18 @@ public class ElemASBuffer : I_Buffer
 {
     public AudioSource m_AudioSource;
     public SoundGameClipInfo m_ASClipInfo;
-    public bool m_isListenMusic = false;
+    //public bool m_isListenMusic = false;
 
-    public ElemASBuffer(bool _isListenMusic, AudioSource _AudioSource, SoundGameClipInfo _ASClipInfo)
+    public ElemASBuffer(/*bool _isListenMusic,*/ AudioSource _AudioSource, SoundGameClipInfo _ASClipInfo)
     {
         m_AudioSource = _AudioSource;
         m_ASClipInfo = _ASClipInfo;
-        m_isListenMusic = _isListenMusic;
+        //m_isListenMusic = _isListenMusic;
     }
 
-    public bool IsListenOrPaused()
-    => !m_AudioSource.isPlaying && (m_AudioSource.time > 0f || m_isListenMusic);
+    //public bool IsListenOrPaused()
+    //=> !m_AudioSource.isPlaying && (m_AudioSource.time > 0f || m_isListenMusic);
+
 
     public float[] UpdateThisAnimClipLeg()
     {

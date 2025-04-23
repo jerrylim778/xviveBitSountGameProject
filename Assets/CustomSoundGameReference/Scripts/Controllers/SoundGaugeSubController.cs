@@ -32,9 +32,16 @@ public class SoundGaugeSubController : SubModuleControllerBase
         var GetPartParms = base.Initlization(_ParsingParams);
         m_SoundMainController = m_MainController as SoundGameController;
         m_CamProductionCon = m_SoundMainController.I_GetSubModule<CameraProductionSubController>();
+        m_isUpdateSliderValue = false;
+        pp_GaugeValue = 0f; AddWPSlider(0);
         var GetTrs = Helper.ChildLinearStuctureSearch(this.transform);
         GetTrs.HForEach(x => x.gameObject.SetActive(false));
         return null;
+    }
+
+    public override void BreakPoint(bool _isBreak, SubModuleBreakType _BrackType = SubModuleBreakType.BreakAll, Type _GetType = null)
+    {
+        base.BreakPoint(_isBreak, _BrackType, _GetType);
     }
 
     public void ElemSinngerOutPutInit()
@@ -63,6 +70,7 @@ public class SoundGaugeSubController : SubModuleControllerBase
     //SoundGame에서 데이터를 가지고 있는 함수에서 호출할 수 있도록
     public void ApplySoundStack(bool _isAdd)
     {
+        if (!m_isActionProcess) return;
         if(_isAdd) MaskTweening();
         AddWPSlider(_isAdd? 0.1f : -0.1f);
         m_isUpdateSliderValue =

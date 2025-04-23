@@ -7,9 +7,16 @@ public class GUIAlbumModule : MonoBehaviour
 {
     [SerializeField, ReadOnly] private int m_AlbumItemIDX;
     [SerializeField, ReadOnly] RectTransform m_MoveRT;
+    private bool m_isFirst = false;
 
     public void Initlization(int _ItemIDX, Sprite _AlbumSprite, System.Action _EndCallBack = null)
     {
+        if (m_isFirst)
+        {
+            _EndCallBack?.Invoke();
+            return;
+        }
+        m_isFirst = true;
         m_AlbumItemIDX = _ItemIDX;
         m_MoveRT = this.transform as RectTransform;
         m_MoveRT.GetChild(0).GetComponent<Image>().sprite = _AlbumSprite;

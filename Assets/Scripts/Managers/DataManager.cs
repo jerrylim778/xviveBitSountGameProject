@@ -43,7 +43,7 @@ public sealed partial class DataManager : MonoBehaviour
 
     #region Resources Path Reference
     [Tooltip("Resources Paths")]
-
+    //AnimController\DefultObject\MainClips
     private Dictionary<string, string> m_AllResourcesLoadPath = new()
     {
         { nameof(AudioClip), $"Objects/DefultObject/MainClips/{nameof(AudioClip)}/" },

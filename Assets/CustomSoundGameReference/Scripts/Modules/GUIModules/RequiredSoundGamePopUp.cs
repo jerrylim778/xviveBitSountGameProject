@@ -7,14 +7,14 @@ using Sirenix.OdinInspector;
 using Commons.Helpers;
 using System;
 
-public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, IPointerDownHandler, IDragHandler, IPointerUpHandler
+public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I_PopUpPop, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [Header("Required Values")]
     [SerializeField, ReadOnly] private bool m_isActionProcess;
     [SerializeField, ReadOnly] private SoundGameController m_MainSoundController;
     [Header("Record Reference")]
-    [SerializeField] private RectTransform m_ReCordBG;
-    [SerializeField] private Button m_ReCordBtn;
+    [SerializeField] private RectTransform m_BSBG;
+    [SerializeField] private Button m_BackSpaceBtn;
     [Header("Music Out Side Reference")]
     [SerializeField] private RectTransform m_MOutSideBG;
     [SerializeField] private Button m_MOutSideMusicStopBtn;
@@ -25,6 +25,7 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
     [SerializeField] private ScrollRect m_MainScrollRect;
     [SerializeField] private RectTransform m_ICONModuleBG;
     [SerializeField] private List<DataMonoMusicICONModule> m_DataMonoMusicICONModules = new();
+    [SerializeField] private List<DataMonoMuteModule> m_DataMonoMuteModules = new();
 
     [Tooltip("Control Values")]
     private bool m_isUsingJoyStick;
@@ -49,24 +50,25 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         #region Main Events Tweening Init
         //m_ICONModuleBG �ش� �κп� BG�� �ʱ�ȭ ��ų ����� �����Ұ�
 
-        m_ReCordBG.gameObject.SetActive(false);
+        m_BSBG.gameObject.SetActive(false);
         m_MOutSideBG.gameObject.SetActive(false);
 
-        m_ReCordBtn.interactable = false;
+        m_BackSpaceBtn.interactable = false;
         m_MOutSideMusicStopBtn.interactable = false;
         m_MOutSideCycleSlider.interactable = false;
         m_MOutSideCycleSlider.value = 0f;
 
-        m_ReCordBG.anchoredPosition = new Vector2(-20f, -20f);
+        m_BSBG.anchoredPosition = new Vector2(-20f, -20f);
         m_MOutSideBG.anchoredPosition = new Vector2(-80f, -26.8f);
-        
-        m_ReCordBG.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 0f;
+
+        m_BSBG.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 0f;
         m_MOutSideBG.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 0f;
 
         m_MOutSideMusicStopBtn.image.rectTransform.GetChild(0).gameObject.SetActive(true);
         m_MOutSideMusicStopBtn.image.rectTransform.GetChild(1).gameObject.SetActive(false);
         #endregion
 
+        m_MainScrollRect.enabled = false;
         _GetInfos.HForEach(x => 
         {
             var ReciveICON = Instantiate(x.s_PrefabObjs, m_ICONModuleBG);
@@ -105,7 +107,7 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
             canvasLocalPos.y -= 10f;
             GetModulePrefab.GetComponent<RectTransform>().anchoredPosition = canvasLocalPos;
         }
-        
+        m_DataMonoMuteModules.Add(GetModulePrefab);
         return GetModulePrefab;
     }
 
@@ -118,8 +120,9 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
     {
         base.BreakPoint(_isBreak, _BrackType, _GetType);
         m_isActionProcess = _isBreak;
-        m_ReCordBtn.interactable = _isBreak;
+        m_BackSpaceBtn.interactable = _isBreak;
         m_MOutSideMusicStopBtn.interactable = _isBreak;
+        m_MainScrollRect.enabled = _isBreak ? m_DataMonoMusicICONModules.Count > 4 : false;
         //m_MOutSideCycleSlider.value = 0f;
         m_DataMonoMusicICONModules.HForEach(x => x.SemiBreakPoint(_isBreak));
     }
@@ -131,43 +134,88 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         ContentsSizeFilter.enabled = false;
         GetLG.enabled = false;
 
-
-        m_ReCordBG.gameObject.SetActive(true);
-        var GetCG = m_ReCordBG.gameObject.CheckComnectComponent<CanvasGroup>();
+        #region Push Tweening
+        m_BSBG.gameObject.SetActive(true);
+        var GetCG = m_BSBG.gameObject.CheckComnectComponent<CanvasGroup>();
         DOTween.To(() => GetCG.alpha, x => GetCG.alpha = x, 1f, 0.85f).SetEase(Ease.OutSine);
-        m_ReCordBG.DOAnchorPosX(50f, 0.65f).SetEase(Ease.OutCirc);
+        m_BSBG.DOAnchorPosX(50f, 0.65f).SetEase(Ease.OutCirc);
 
         m_MOutSideBG.gameObject.SetActive(true);
         var GetCG_2 = m_MOutSideBG.gameObject.CheckComnectComponent<CanvasGroup>();
         DOTween.To(() => GetCG_2.alpha, x => GetCG_2.alpha = x, 1f, 0.85f).SetDelay(0.15f).SetEase(Ease.OutSine);
         m_MOutSideBG.DOAnchorPosX(-50, 0.65f).SetDelay(0.15f).SetEase(Ease.OutCirc);
         
-        int ComplateIDX = 0; int CountIDX = 0; float ApplyDur = 0.2f;
+        int ComplateIDX = 0; int CountIDX = 0; float ApplyDur = 0.15f;
         m_DataMonoMusicICONModules.HForEach(x =>
         {
             x.pp_OGRT.anchoredPosition = new Vector2(x.pp_ICONOGAnhoredPos.x, -400f);
             x.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 1f;
             //float ApplyDur = (CountIDX + 1) * 0.1f; //Debug.Log(ApplyDur);
-            x.pp_OGRT.DOAnchorPosY(x.pp_ICONOGAnhoredPos.y, ApplyDur/*UnityEngine.Random.Range(0.55f, 1f)*/).
-            SetEase(Ease.OutSine).OnComplete(() => 
+            x.pp_OGRT.DOAnchorPosY(x.pp_ICONOGAnhoredPos.y, 0.45f/*UnityEngine.Random.Range(0.55f, 1f)*/).
+            SetDelay(ApplyDur).SetEase(Ease.OutSine).OnComplete(() => 
             {
                 ComplateIDX++;
                 if (ComplateIDX >= m_DataMonoMusicICONModules.Count)
                 {
                     m_MainSoundController.I_CheckSubModuleIsAllCanAction(m_MainController);
+                    m_BackSpaceBtn.onClick.AddListener(OnClickBackSpaceBtn);
                     m_MOutSideMusicStopBtn.onClick.AddListener(OnClickMSideBtn);
                     ContentsSizeFilter.enabled = true;
                     GetLG.enabled = true;
                 }
             });
-            ApplyDur += 0.15f; CountIDX++;
+            ApplyDur += 0.05f; CountIDX++;
         });
-        
+        #endregion
+    }
+
+    public void PopOutEvent(System.Action _EndCallBack = null)
+    {
+        //ElemSinSubController에서 독단적으로 실행할게 많다면 
+        //해당 함수로 이전 할 수 있도록 리팩 요망
+        var ContentsSizeFilter = m_ICONModuleBG.GetComponent<ContentSizeFitter>();
+        var GetLG = m_ICONModuleBG.GetComponent<LayoutGroup>();
+        ContentsSizeFilter.enabled = false; GetLG.enabled = false;
+
+        #region PopUp Tweening
+
+        bool isComplateUpSide = false, isComplateDownSide = false;
+        m_DataMonoMuteModules.HForEach(x => x.gameObject.SetActive(false));
+        m_BSBG.DOAnchorPosX(-250f, 0.45f).SetEase(Ease.InBack);
+        m_MOutSideBG.DOAnchorPosX(250f, 0.45f).SetEase(Ease.InBack).OnComplete(() => 
+        {
+            isComplateUpSide = true;
+            if (isComplateUpSide && isComplateDownSide)
+                _EndCallBack?.Invoke();
+        });
+
+        int ComplateIDX = 0; int CountIDX = 0; float ApplyDur = 0.05f;
+        m_DataMonoMusicICONModules.Reverse();
+        m_DataMonoMusicICONModules.HForEach(x =>
+        {
+            x.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 1f;
+            x.pp_OGRT.DOAnchorPosY(-400f, 0.2f).SetDelay(ApplyDur).
+            SetEase(Ease.OutSine).OnComplete(() =>
+            {
+                ComplateIDX++;
+                if (ComplateIDX >= m_DataMonoMusicICONModules.Count)
+                {
+                    isComplateDownSide = true;
+                    if (isComplateUpSide && isComplateDownSide)
+                    _EndCallBack?.Invoke();
+                }
+            });
+            ApplyDur += 0.05f; CountIDX++;
+        });
+        #endregion
     }
 
     #endregion
 
     #region Sub System Private Functions (**Main Button Events**)
+
+    private void OnClickBackSpaceBtn() => Appinstance.Instance.ms_GamePlayManager.
+    ExecuteChangeAllGameControll(GamePlayManager.GamePlayType.EndReady, false);
 
     private void OnClickMSideBtn()
     {

@@ -128,13 +128,14 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
     {
         if (source != null && !audioSources.Contains(source))
         {
-            audioSources.Add(source);
+            source.m_AudioSource.playOnAwake = false;
             if (m_isTestMode)
             {
                 if (!source.m_AudioSource.isPlaying)
                     source.m_AudioSource.Stop();
                 source.m_AudioSource.Play();
             }
+            audioSources.Add(source);
             // 배열 재초기화
             RecycleArrays();
         }
@@ -170,7 +171,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
             }
             else // 재생 중이 아니거나 null인 소스는 0으로 초기화
             {
-                if (audioSources[i] != null && !audioSources[i].IsListenOrPaused()) audioSources.RemoveAt(i);
+                //if (audioSources[i] != null && !audioSources[i].IsListenOrPaused()) audioSources.RemoveAt(i);
                 System.Array.Clear(sourceSpectrums[i], 0, sourceSpectrums[i].Length);
             }
         }

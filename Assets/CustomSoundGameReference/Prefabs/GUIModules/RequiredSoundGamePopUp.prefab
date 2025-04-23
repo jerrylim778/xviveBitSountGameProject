@@ -740,8 +740,8 @@ MonoBehaviour:
   m_InstanceViewOutSubControllers: []
   m_isActionProcess: 0
   m_MainSoundController: {fileID: 0}
-  m_ReCordBG: {fileID: 6336647390685630757}
-  m_ReCordBtn: {fileID: 8973045565509291110}
+  m_BSBG: {fileID: 6336647390685630757}
+  m_BackSpaceBtn: {fileID: 8973045565509291110}
   m_MOutSideBG: {fileID: 2266346763876930406}
   m_MOutSideMusicStopBtn: {fileID: 2463253923881933576}
   m_MOutSideCycleSlider: {fileID: 5596411810727566773}
@@ -1082,7 +1082,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6336647390685630757}
   m_Layer: 5
-  m_Name: RecordBG
+  m_Name: BackSpaceBG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1122,7 +1122,7 @@ GameObject:
   - component: {fileID: 2218314277448064268}
   - component: {fileID: 8973045565509291110}
   m_Layer: 5
-  m_Name: RECButton
+  m_Name: BackSpaceButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

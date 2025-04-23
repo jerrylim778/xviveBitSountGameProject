@@ -129,7 +129,7 @@ public class AudioManager : MonoBehaviour
 
     #region Main System Public Functions (**Bit Sound Game Project Version (**이후 리팩토링 사용 or 전부 삭제 요망**)**)
 
-    public AudioASInfo PlaySound(bool _isDirPlay, bool _isLoop, string _Name, 
+    public AudioASInfo PlaySound(bool _isDirPlay, bool _isLoop, string _Name, float _Volume, 
     AudioType _GetATType, AudioClip _PlaySoundClip, I_OwnerShip _GetOwnerShip = null)
     {
         AudioInfo? GetCallAudioInfos = null;
@@ -137,7 +137,7 @@ public class AudioManager : MonoBehaviour
         if (FIDX != -1)  GetCallAudioInfos = SavedAudioInfos[FIDX];
         bool isOnlyApplyClipInfo = GetCallAudioInfos == null;
         if (isOnlyApplyClipInfo)
-        GetCallAudioInfos = new AudioInfo(_Name, _GetATType, _PlaySoundClip, _isLoop, 1);
+        GetCallAudioInfos = new AudioInfo(_Name, _GetATType, _PlaySoundClip, _isLoop, _Volume);
 
         AudioASInfo ApplyAS = GetCallAudioInfos.Value.s_AudioType switch
         {
@@ -169,7 +169,7 @@ public class AudioManager : MonoBehaviour
             _ => throw new System.Exception($"{nameof(SavedAudioInfos)}에 없어야되는 타입이 파싱되었습니다.!")
         };
 
-        AdjustOutPutSound(ApplyAS, SavedAudioInfos[FIDX], false);
+        AdjustOutPutSound(ApplyAS, SavedAudioInfos[FIDX], true);
     }
 
     public void PlaySound(AudioInfo _GetAudioInfo)

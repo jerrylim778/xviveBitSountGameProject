@@ -9,6 +9,7 @@ using Commons.Helpers;
 menuName = "DefultScriptableObject/" + nameof(AudioClipSpectrumExtractor), order = int.MaxValue)]
 public class AudioClipSpectrumExtractor : ScriptableObject
 {
+    [SerializeField] private SDataAlbumLevelGameInfo m_AlbumLevelGameInfo;
     [SerializeField] private SDataSoundGameInfo m_SDataSoundGameInfo;
     [SerializeField] private List<WebClipBitSavedInfo> m_WebClipBitSavedInfo = new();
 
@@ -55,8 +56,19 @@ public class AudioClipSpectrumExtractor : ScriptableObject
         _GetInfo.s_ReciveBitInfoByClipName = _GetBitList;
     }
 
+    private void FindSDataLevelSoundGameInfo(string _GetClipName, List<BitInfo> _GetBitList)
+    {
+        if (m_AlbumLevelGameInfo.pp_DSAlbumLevelInfos.
+        ISFindCondition(x => x.m_MainClipBGM.s_AudioClipsInfo.CheckArrayNull(0) &&
+        x.m_MainClipBGM.s_AudioClipsInfo[0].name == _GetClipName, out AlbumInfo _GetInfo))
+        _GetInfo.m_MainClipBGM.s_ReciveBitInfoByClipName = _GetBitList;
+    }
+
     public void ForceApplyGameInfo() => m_WebClipBitSavedInfo.ForEach(x =>
     FindSDataSoundGameInfo(x.s_SetClips.name, x.s_OutPutClipBit));
+
+    public void ForceApplyAlbumInfo() => m_WebClipBitSavedInfo.ForEach(x =>
+    FindSDataLevelSoundGameInfo(x.s_SetClips.name, x.s_OutPutClipBit));
 
     #region 정적으로 저장하는 형태가 제대로 작동되지 않음 (보류)
     private System.Tuple<float[], List<float[]>> SavedData(AudioClip _SetClips)

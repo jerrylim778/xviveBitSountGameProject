@@ -201,7 +201,8 @@ public class GamePlaySystem : SingleTon<GamePlaySystem>, I_StartControllerBase
         (GetObj.GetComponent<T>() as I_PopUpPop).PopOutEvent(() => 
         {
             Destroy(GetObj.gameObject);
-            if ((GetObj as I_PopUpInfo).I_GetPopUpType() != PopUpType.DefultPopUp) return;
+            if ((GetObj as I_PopUpInfo).I_GetPopUpType() != PopUpType.DefultPopUp)
+            { _EndCallBack?.Invoke(); return; }
             if (m_StackPopUp.ToList().FindAll(x => (x as I_PopUpInfo).
             I_GetPopUpType() == PopUpType.DefultPopUp).Count == 0) m_PopUpTr.gameObject.SetActive(false);
             #region MainStreamBaseType 또한 PopUp의 일순위로 들어갈때 사용한다
@@ -376,8 +377,7 @@ public class GamePlaySystem : SingleTon<GamePlaySystem>, I_StartControllerBase
     }
 
     public T FindModuleByTemp<T>() where T : SystemBase
-    => m_AllSystemSection.Find(x => x.s_MainSystemBase is T || x.s_SubSystemBase is T) as T;
-
+    => m_AllSystemSection.Find(x => x.s_MainSystemBase is T /*|| x.s_SubSystemBase is T*/).s_MainSystemBase as T;
 
     private void WorldPosStateBeforeEntry(SystemWorldBase _GetSubBase, SystemInfo _BeforeProcess)
     {

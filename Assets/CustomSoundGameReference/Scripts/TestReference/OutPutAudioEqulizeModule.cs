@@ -39,11 +39,19 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
         
         GetMixSubController.InitOutPutAudioSpectrum(true, this);
         if (m_isTestMode) SemiBreakPoint(true);
-        else if(!m_isTestMode && m_isUsedLocalProduction) ActionBeforeOutPutProduction(EndCallBack);
+        else if(!m_isTestMode && m_isUsedLocalProduction) ActionBeforeOutPutProduction(true, EndCallBack);
     }
 
     public override void SemiBreakPoint(bool _isBreakPoint)
-    => m_isProcessAction = _isBreakPoint;
+    {
+        m_isProcessAction = _isBreakPoint;
+        if (!_isBreakPoint)
+        {
+            ResetCycle();
+            UpdateApplySmoothAnimation(true);
+        }
+        
+    }
 
     public void ResetCycle()
     {
@@ -57,7 +65,7 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
         UpdateApplySmoothAnimation();
     }
 
-    private void UpdateApplySmoothAnimation()
+    private void UpdateApplySmoothAnimation(bool _isDirctApplyValue = false)
     {
         if (!m_isProcessAction) return;
 
@@ -65,7 +73,8 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
         
         for (int i = 0; i < pp_IDXArray; i++)
         {
-            currentHeights[i] = Mathf.Lerp(currentHeights[i], targetHeights[i], Time.deltaTime * m_LerpSped);
+            currentHeights[i] = _isDirctApplyValue? targetHeights[i] :
+            Mathf.Lerp(currentHeights[i], targetHeights[i], Time.deltaTime * m_LerpSped);
 
 
             if (!isBarStick) 
@@ -91,22 +100,31 @@ public class OutPutAudioEqulizeModule : ModuleMonoBase
 
     #region Sub System Private Functions (**OutPut Elem Production**)
 
-    private void ActionBeforeOutPutProduction(System.Action _EndCallBack)
+    public void ActionBeforeOutPutProduction(bool _isOn, System.Action _EndCallBack = null)
     {
         switch (m_OutPutAudioEqulType)
         {
             case OPAEType.StickArrayType:
+                //0.03 0
+                //0 1.2
                 var GetParticles =
                 this.transform.ChildLinearStuctureSearch<ParticleSystem>();
                 if (GetParticles.Length > 0)
                 {
                     var ApplyParticle = GetParticles[0];
                     var GetOGScale = ApplyParticle.transform.localScale;
-                    ApplyParticle.transform.DOScaleY(0.8f, 0.25f).SetEase(Ease.OutSine).OnComplete(() =>
-                    ApplyParticle.transform.DOScaleX(0.1f, 0.25f).SetEase(Ease.Linear).OnComplete(() =>
-                    ApplyParticle.transform.DOScaleX(2f, 0.65f).SetEase(Ease.OutSine)));
+                    ApplyParticle.transform.DOScaleY(_isOn? 0.8f : 1.2f, 0.25f).SetEase(Ease.OutSine).OnComplete(() =>
+                    ApplyParticle.transform.DOScaleX(_isOn? 0.1f : 0.8f, 0.25f).SetEase(Ease.Linear).OnComplete(() =>
+                    ApplyParticle.transform.DOScaleX(_isOn? 2f : 0f, 0.65f).SetEase(Ease.OutSine).OnComplete(() => 
+                    {
+                        if (!_isOn)
+                        {
+                            ApplyParticle.transform.localScale = new Vector3(0.03f, 0f, 1f);
+                            _EndCallBack?.Invoke();
+                        }
+                    })));
                 }
-
+                if (!_isOn) return;
                 #region 좌우 나눠 각 구간 연출 진행
                 bool _isCol = m_StickArrayTRs.Length % 2 == 0; //짝 홀
                 int GetIDX = _isCol ?
