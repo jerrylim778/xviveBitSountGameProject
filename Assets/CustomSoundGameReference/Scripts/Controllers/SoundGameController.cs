@@ -109,7 +109,9 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
             m_TempASCInfo.s_PairParamDatas.Add(new(ApplyAudioMixer, null));
 
             var GetGaugeCon = pp_MainMapModuleByVersion.ChildLinearStuctureSearch<SoundGaugeSubController>()[0];
-            m_TempASCInfo.s_PairParamDatas.Add(new(GetGaugeCon, null));
+            var MainSR = pp_MainMapModuleByVersion.GetChild(0).GetChild(1).GetComponent<SpriteRenderer>();
+            m_TempASCInfo.s_PairParamDatas.Add(new(GetGaugeCon, new SubConParamByGauge(
+            MainSR.gameObject.CheckComnectComponent<ShaderApplyRatioFloatPowerModule>())));
 
             pp_MainMapModuleByVersion.ChildLinearStuctureSearch<ElemSinngerSubController>().HForEach(x =>
             {
@@ -247,10 +249,11 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
             MainBGShakeWithCustomStrength(0.4f);
             //MainSR.transform.doshake
             m_WPSticksEqulizer.gameObject.SetActive(true);
-            InitAudioBaouns(true, m_CurrAlbumInfo, () => GamePlaySystem.Instance.MainPopUpPush<RequiredSoundGamePopUp>());
+            InitAudioBaouns(true, m_CurrAlbumInfo, () => 
+            GamePlaySystem.Instance.MainPopUpPush<RequiredSoundGamePopUp>());
             ApplyMainICONPR.gameObject.SetActive(true);
 
-            var GetLists = SplitListMiddleCount(m_GetCurrSinngerSubControllers);
+            var GetLists = m_GetCurrSinngerSubControllers.SplitListMiddleCount();
             GetLists.HForEach(x => Helper.HCountForEach(0, x.Count - 1, _CountIDX =>
             {
                 var MainSR = x[_CountIDX].GetComponent<SpriteRenderer>();
@@ -357,9 +360,11 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
         //묶여있던 여러 이벤트들을 발동할것 (게이지 부터 진행할것)
         if(_isAdd) MainBGShakeWithCustomStrength(0.2f);
         I_GetSubModule<SoundGaugeSubController>().ApplySoundStack(_isAdd);
+
         var GetAudioMix = I_GetSubModule<AudioMixVisualizeSubController>();
         if (_isAdd) GetAudioMix.AddAudioSource(_ApplyBuffer); 
         else GetAudioMix.RemoveAudioSource(_ApplyBuffer);
+
         m_SoundGameMyInfo.ApplyNewSubModule(ElemIDXs); //어차피 전부 삭제해야됨
     }
 
@@ -548,19 +553,6 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
     #endregion
 
     #region Sub System Private Functions 
-
-    //Helpe 로 이전할것
-    private List<List<T>> SplitListMiddleCount<T>(IList<T> _GetList) where T : class
-    {
-        bool _isCol = _GetList.Count % 2 == 0; //짝 홀
-        int GetIDX = _isCol ?
-        _GetList.Count / 2 : Mathf.RoundToInt(_GetList.Count / 2);
-        var LHalfList = new List<T>(); var RHalfList = new List<T>();
-        Helper.HCountForEach(0, GetIDX - 1, _CountIDX => LHalfList.Add(_GetList[_CountIDX]));
-        Helper.HCountForEach(GetIDX, _isCol ? GetIDX * 2 - 1 : GetIDX * 2, _CountIDX => RHalfList.Add(_GetList[_CountIDX]));
-        LHalfList.Reverse();
-        return new List<List<T>>(2){ LHalfList, RHalfList };
-    }
 
     public void MainBGShakeWithCustomStrength(float strength)
     {

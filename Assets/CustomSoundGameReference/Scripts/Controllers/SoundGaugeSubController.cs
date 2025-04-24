@@ -24,12 +24,21 @@ public class SoundGaugeSubController : SubModuleControllerBase
     [Tooltip("Required Values")]
     private Sequence m_SeqMask, m_SeqMaskComplate;
     private SoundGameController m_SoundMainController;
+    private ShaderApplyRatioFloatPowerModule m_MainICONPowerModule;
 
     public float pp_GaugeValue { get; private set; }
 
     public override object[] Initlization(params object[] _ParsingParams)
     {
         var GetPartParms = base.Initlization(_ParsingParams);
+        if(m_MainICONPowerModule == null)
+        {
+            //CheckAndApplyByParams<ShaderApplyRatioFloatPowerModule>(GetPartParms, x => m_MainICONPowerModule = x);
+            var GetGaugeInfo = (SubConParamByGauge)GetPartParms[0];
+            m_MainICONPowerModule = GetGaugeInfo.s_ShaderFloatPowerModule;
+            m_MainICONPowerModule.Initlization(0, 1, "_ICEAgePower"); //원래는 정보 데이터도 따로 들고 있어야함
+        }
+
         m_SoundMainController = m_MainController as SoundGameController;
         m_CamProductionCon = m_SoundMainController.I_GetSubModule<CameraProductionSubController>();
         m_isUpdateSliderValue = false;
@@ -98,6 +107,8 @@ public class SoundGaugeSubController : SubModuleControllerBase
             //게임 종료 => 웹뷰 띄우기
             pp_GaugeValue = 0f; //테스트 용도
         }
+
+        m_MainICONPowerModule.ActionForMat(pp_GaugeValue, new CamFSMatRatioBuffer(0f, 1f));
         m_CamProductionCon.CamFullScreenActionMat(pp_GaugeValue, new CamFSMatRatioBuffer(0f, 1f));
         var GetLS = m_SliderTRVer.transform.localScale;
         GetLS.y = pp_GaugeValue;
@@ -110,5 +121,20 @@ public class SoundGaugeSubController : SubModuleControllerBase
         !m_SoundMainController.pp_isMusicOn) return;
 
         AddWPSlider(Time.deltaTime * 0.025f);
+    }
+}
+
+public struct SubConParamByGauge : ControllerBase.I_PurifiedParamsData
+{
+    public ShaderApplyRatioFloatPowerModule s_ShaderFloatPowerModule;
+    
+    public SubConParamByGauge(ShaderApplyRatioFloatPowerModule _ShaderFloatPowerModule)
+    {
+        s_ShaderFloatPowerModule = _ShaderFloatPowerModule;
+    }
+
+    public bool I_ISGetOutParams(ControllerBase _GetPPData)
+    {
+        throw new NotImplementedException();
     }
 }

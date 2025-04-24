@@ -8,7 +8,6 @@ public class MonoReciveASClipByBitInfos : MonoBehaviour
 {
     [SerializeField] private bool m_BitStart = false;
     [SerializeField, ReadOnly, ShowIf("m_BitStart")] private bool m_isBitStartOn;
-
     [SerializeField] private AudioClipSpectrumExtractor m_AudioClipSpectrumExtractor;
     [SerializeField] private List<float[]> m_ReciveSubList = new();
     [SerializeField] private AudioSource m_ASInfo;
@@ -52,6 +51,7 @@ public class MonoReciveASClipByBitInfos : MonoBehaviour
     private void ForceApplyLevelInfo()
     => m_AudioClipSpectrumExtractor.ForceApplyAlbumInfo();
 
+    private ElemASBuffer test_ElemASBuffer;
 
     // Update is called once per frame
     void Update()
@@ -64,8 +64,7 @@ public class MonoReciveASClipByBitInfos : MonoBehaviour
                 m_isBitStartOn = !m_isBitStartOn;
                 var GetAudioMixCon =
                 FindAnyObjectByType<AudioMixVisualizeSubController>();
-                GetAudioMixCon.BreakPoint(m_isBitStartOn,
-                SubModuleControllerBase.SubModuleBreakType.OnlyBreakElems);
+                GetAudioMixCon.BreakPoint(m_isBitStartOn, SubModuleControllerBase.SubModuleBreakType.OnlyBreakElems);
                 var GetAllList =
                 FindObjectsOfType<OutPutAudioEqulizeModule>().ToList().FindAll(x => !x.pp_isTestMode);
                 GetAllList.HForEach(x =>
@@ -74,9 +73,27 @@ public class MonoReciveASClipByBitInfos : MonoBehaviour
                     {
                         ModuleMonoBase NullMonoBase = null;
                         x.Initlization(NullMonoBase, GetAudioMixCon);
+                        x.SemiBreakPoint(m_isBitStartOn);
                     }
                     else x.SemiBreakPoint(m_isBitStartOn);
                 });
+                if (!m_ASInfo.isPlaying)
+                {
+                    if (m_isBitStartOn)
+                    {
+                        var GetWebClipInfo =
+                        m_AudioClipSpectrumExtractor.pp_SDataSoundGameInfo.pp_DSSoundgameClipInfos.Find(x =>
+                        x.s_AudioClipsInfo[0].name == m_ASInfo.clip.name);
+                        test_ElemASBuffer = new ElemASBuffer(m_ASInfo, GetWebClipInfo);
+                        GetAudioMixCon.AddAudioSource(test_ElemASBuffer);
+                        m_ASInfo.Stop(); m_ASInfo.Play();
+                    }
+                    else
+                    {
+                        m_ASInfo.Stop();
+                        GetAudioMixCon.RemoveAudioSource(test_ElemASBuffer);
+                    }
+                }
             }
             else
             {
@@ -90,8 +107,8 @@ public class MonoReciveASClipByBitInfos : MonoBehaviour
         {
             if (UpdateCheckCycle())
             {
-                float[] ApplySpectrum = new float[64];
-                m_ASInfo.GetSpectrumData(ApplySpectrum, 0, FFTWindow.Rectangular);
+                float[] ApplySpectrum = new float[1024]; //배열을 담아야함
+                m_ASInfo.GetSpectrumData(ApplySpectrum, 0, FFTWindow.BlackmanHarris);
                 m_ReciveSubList.Add(ApplySpectrum);
             }
         }

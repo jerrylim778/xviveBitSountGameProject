@@ -6,6 +6,7 @@ using System;
 
 public class AudioMixVisualizeSubController : SubModuleControllerBase
 {
+    //[SerializeField, ShowIf("m_isTestMode")] private bool m_isTestStartCall;
     // 믹스 방식 열거형
     public enum MixingMethod
     {
@@ -14,6 +15,7 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
         Maximum     // 각 주파수 대역의 최대값 선택
     }
 
+    [SerializeField] private bool m_isAudioParsingVer;
     [SerializeField, Range(0f, 20000f)] private float m_MaxFreq;
 
     [Header("Test Only")]
@@ -56,7 +58,9 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
     {
         var PartParams = base.Initlization(_ParsingParams);
 
-        FindParentsObjTypeByTemp<SoundGameController>().I_CheckSubModuleIsAllCanAction(this);
+        if (m_isTestMode) BreakPoint(true, SubModuleBreakType.OnlyBreakElems);
+        else FindParentsObjTypeByTemp<SoundGameController>().I_CheckSubModuleIsAllCanAction(this);
+
         return null;
     }
 
@@ -166,8 +170,9 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
         {
             if (audioSources[i] != null && audioSources[i].m_AudioSource.isPlaying)
             {
-                //audioSources[i].GetSpectrumData(sourceSpectrums[i], 0, fftWindow);
-                sourceSpectrums[i] = audioSources[i].UpdateThisAnimClipLeg();
+                if (m_isAudioParsingVer)
+                audioSources[i].m_AudioSource.GetSpectrumData(sourceSpectrums[i], 0, fftWindow);
+                else sourceSpectrums[i] = audioSources[i].UpdateThisAnimClipLeg(); 
             }
             else // 재생 중이 아니거나 null인 소스는 0으로 초기화
             {
@@ -351,6 +356,12 @@ public class AudioMixVisualizeSubController : SubModuleControllerBase
     #endregion
 
     #region 유니티 이벤트 함수
+
+    //private void Start()
+    //{
+    //    if (m_isTestMode && m_isTestStartCall)
+    //        Initlization(null);
+    //}
 
     public override void ProcessUpdate()
     {

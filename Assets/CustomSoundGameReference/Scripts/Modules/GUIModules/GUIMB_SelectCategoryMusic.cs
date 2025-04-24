@@ -265,7 +265,7 @@ public class GUIMB_SelectCategoryMusic : SystemBase, I_OwnerShip
 [System.Serializable]
 public class AlbumInfo : InstanceSpriteInfo
 {
-    public Color m_ApplyBGColor;
-    public SoundGameClipInfo m_MainClipBGM;
-    public SDataSoundGameInfo m_ApplySoundGameInfo;
+    //[BoxGroup("AlbumInfo")] public Color m_ApplyBGColor;
+    [BoxGroup("AlbumInfo")] public SoundGameClipInfo m_MainClipBGM;
+    [BoxGroup("AlbumInfo")] public SDataSoundGameInfo m_ApplySoundGameInfo;
 }

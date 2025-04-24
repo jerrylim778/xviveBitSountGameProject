@@ -317,6 +317,27 @@ namespace Commons.Helpers
         public static bool CheckArrayNull<T>(this IList<T> _GetCheckArray, int _CheckCount)
         => _GetCheckArray != null && _CheckCount < _GetCheckArray.Count;
 
+        #region SplitListMiddleCount => 컬렉션을 정확히 반으로
+        /// <summary>
+        /// 컬렉션을 정확히 반으로 쪼개 해당 지점으로부터 
+        /// 첫 배열부터 진행할 수 있습니다.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="_GetList"></param>
+        /// <returns></returns>
+#endregion
+        public static List<List<T>> SplitListMiddleCount<T>(this IList<T> _GetList) where T : class
+        {
+            bool _isCol = _GetList.Count % 2 == 0; //짝 홀
+            int GetIDX = _isCol ?
+            _GetList.Count / 2 : Mathf.RoundToInt(_GetList.Count / 2);
+            var LHalfList = new List<T>(); var RHalfList = new List<T>();
+            Helper.HCountForEach(0, GetIDX - 1, _CountIDX => LHalfList.Add(_GetList[_CountIDX]));
+            Helper.HCountForEach(GetIDX, _isCol ? GetIDX * 2 - 1 : GetIDX * 2, _CountIDX => RHalfList.Add(_GetList[_CountIDX]));
+            LHalfList.Reverse();
+            return new List<List<T>>(2) { LHalfList, RHalfList };
+        }
+
         #endregion
 
         #region String Helper Referecne

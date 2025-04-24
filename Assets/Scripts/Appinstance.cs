@@ -167,9 +167,14 @@ public class ItemInfo
     [Header("======SData Required Values======")]
     public int s_ItemIDX = -1;
     public string s_ItemName;
+    #region Used Parsing Types Reference
+    [FoldoutGroup("UsedItemParsingTypes", false)]
     public ItemType s_ItemType;
+    [FoldoutGroup("UsedItemParsingTypes")]
     public ScriptableDataType s_ScriptableDataType;
+    [FoldoutGroup("UsedItemParsingTypes")]
     public SDataLoadParsingType s_LoadObjectParsingType;
+    #endregion
 }
 
 //(V) 적용한 버전이 존재하다면 (V)표시를 주석으로 적시 요망..!!
@@ -212,39 +217,40 @@ public enum VarOutPut_ItemParentType
 public class DescirptionInfo : ItemInfo
 {
     [Header("======SData Custom======")]
-    [Sirenix.OdinInspector.TabGroup("Tabs", "Descirption")]
+    [FoldoutGroup("Commons Apply Reference"), TabGroup("Commons Apply Reference/Tabs", "Descirption")]
     [TextArea(5, 10)] 
     public string s_Descirption;
 }
 [System.Serializable]
 public class InstanceSpriteInfo : DescirptionInfo
 {
-    [Sirenix.OdinInspector.TabGroup("Tabs", "Sprits")]
+    [FoldoutGroup("Commons Apply Reference"), TabGroup("Commons Apply Reference/Tabs", "Sprits")]
     [Commons.Helpers.Attribute.Lim_SpritePriview(100, 100)]
     public Sprite[] s_SpriteArray;
 }
 [System.Serializable]
 public class InstanceObjectInfo : InstanceSpriteInfo
 {
-    [Sirenix.OdinInspector.TabGroup("Tabs", "Prefab")]
+    [FoldoutGroup("Commons Apply Reference"), TabGroup("Commons Apply Reference/Tabs", "Prefab")]
     public GameObject s_PrefabObjs;
 }
 
 [System.Serializable]
 public class InstanceAnim : InstanceObjectInfo
 {
-    [Sirenix.OdinInspector.TabGroup("Tabs", "AnimController")]
+    [FoldoutGroup("Commons Apply Reference"), TabGroup("Commons Apply Reference/Tabs", "AnimController")]
     public RuntimeAnimatorController s_RunTimeAnim;
     //public AudioClip
 }
 
 public class OtherAllClips : InstanceObjectInfo
 {
-    [Sirenix.OdinInspector.TabGroup("Tabs", "OtherClips => AudioClip")]
+    [FoldoutGroup("Commons Apply Reference"), TabGroup("Commons Apply Reference/Tabs", "OtherClips => AudioClip")]
     public AudioClip[] s_AudioClipsInfo;
     //[Sirenix.OdinInspector.TabGroup("Tabs", "OtherClips => AnimClip")]
     //public AnimationClip[] s_AnimClipsInfo;
-    [Sirenix.OdinInspector.TabGroup("Tabs", "OtherClips => VedioClip")]
+    
+    [FoldoutGroup("Commons Apply Reference"), TabGroup("Commons Apply Reference/Tabs", "OtherClips => VedioClip")]
     public UnityEngine.Video.VideoClip[] s_VidioClipsInfo;
 }
 

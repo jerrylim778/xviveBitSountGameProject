@@ -14,6 +14,7 @@ public class AudioClipSpectrumExtractor : ScriptableObject
     [SerializeField] private List<WebClipBitSavedInfo> m_WebClipBitSavedInfo = new();
 
     public List<WebClipBitSavedInfo> pp_WebClipBitSavedInfo => m_WebClipBitSavedInfo;
+    public SDataSoundGameInfo pp_SDataSoundGameInfo => m_SDataSoundGameInfo;
 
     #region 현재는 런타임에서 비트를 가져옴 (**해당 방식 사용안함**)
     [SerializeField] private int fftWindowSize = 1024; // 예: 1024 또는 2048
@@ -51,7 +52,7 @@ public class AudioClipSpectrumExtractor : ScriptableObject
     private void FindSDataSoundGameInfo(string _GetClipName, List<BitInfo> _GetBitList)
     {
         if (m_SDataSoundGameInfo.pp_DSSoundgameClipInfos.
-        ISFindCondition(x => x.s_AudioClipsInfo.CheckArrayNull(0) &&
+        ISFindCondition(x => x.s_AudioClipsInfo.CheckArrayNull(0) && x.s_AudioClipsInfo[0] != null &&
         x.s_AudioClipsInfo[0].name == _GetClipName, out SoundGameClipInfo _GetInfo))
         _GetInfo.s_ReciveBitInfoByClipName = _GetBitList;
     }
