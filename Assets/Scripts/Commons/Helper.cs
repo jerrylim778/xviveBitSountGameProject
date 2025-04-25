@@ -267,6 +267,20 @@ namespace Commons.Helpers
             return ReturnValue.ToArray();
         }
 
+        public static T ChildLinearSearchFirst<T>(this Transform _GetParent) where T : UnityEngine.Object
+        {
+            T ReturnValue = null;
+            for (int i = 0; i < _GetParent.childCount; i++) 
+            {
+                if (_GetParent.GetChild(i).TryGetComponent<T>(out T _GetTemp))
+                {
+                    ReturnValue = _GetTemp;
+                    break;
+                }
+            }
+            return ReturnValue;
+        }
+
         //부모의 선형 구조 탐색
         public static T ParentNonLinearStuctureSearch<T>(this Transform _StartChildTr) where T : Behaviour
         {
@@ -646,6 +660,24 @@ namespace Commons.Helpers
             Vector3 DeltaLPos = new Vector3(DeltaPivot.x * OGSize.x, DeltaPivot.y * OGSize.y, 0f);
             _GetChangedRT.pivot = _NewPivot;
             _GetChangedRT.localPosition = OGLPos + DeltaLPos;
+        }
+
+        #region WorldToOverlayPosition 설명
+        /// <summary>
+        /// 월드 위치를 Overlay Canvas 기준의 로컬 UI 위치로 변환합니다.
+        /// </summary>
+        /// <param name="worldPosition">월드 공간의 위치</param>
+        /// <param name="canvasRect">Overlay Canvas의 RectTransform</param>
+        /// <param name="outputUIPosition">결과로 나온 anchoredPosition 값</param>
+        /// <returns>캔버스 내에 위치가 존재하는지 여부</returns>
+        #endregion
+        public static bool WorldToOverlayPosition(Vector3 worldPosition, RectTransform canvasRect, out Vector2 outputUIPosition)
+        {
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPosition);
+
+            // Overlay 모드이므로 카메라는 null로 설정
+            return RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect, screenPos, null, out outputUIPosition);
         }
 
         #endregion

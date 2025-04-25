@@ -36,11 +36,19 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _GlowMaskTex:
+        m_Texture: {fileID: 2800000, guid: 56a3dded2c17edc449487d84f00a1ed0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ICETex:
         m_Texture: {fileID: 2800000, guid: 7e8b65241905a374e8570a115c21ac13, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SubTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -59,8 +67,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _ICEAgePower: 0
+    - _IsAddCrush: 0
     - _LerpPower: 0
-    - _PowerByAlpha: 0.714
-    m_Colors: []
+    - _PowerByAlpha: 0.411
+    - _PowerByCrushAlpha: 0
+    m_Colors:
+    - _GlowHDRColor: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -15,6 +15,8 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
     [Header("Record Reference")]
     [SerializeField] private RectTransform m_BSBG;
     [SerializeField] private Button m_BackSpaceBtn;
+    [Header("Shard Reference")]
+    [SerializeField] private Button m_ShardBtn;
     [Header("Music Out Side Reference")]
     [SerializeField] private RectTransform m_MOutSideBG;
     [SerializeField] private Button m_MOutSideMusicStopBtn;
@@ -52,17 +54,21 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
 
         m_BSBG.gameObject.SetActive(false);
         m_MOutSideBG.gameObject.SetActive(false);
+        m_ShardBtn.gameObject.SetActive(false);
 
+        m_ShardBtn.interactable = false;
         m_BackSpaceBtn.interactable = false;
         m_MOutSideMusicStopBtn.interactable = false;
         m_MOutSideCycleSlider.interactable = false;
         m_MOutSideCycleSlider.value = 0f;
 
         m_BSBG.anchoredPosition = new Vector2(-20f, -20f);
-        m_MOutSideBG.anchoredPosition = new Vector2(-80f, -26.8f);
+        m_MOutSideBG.anchoredPosition = new Vector2(80f, -26.8f);
+        m_ShardBtn.image.rectTransform.anchoredPosition = new Vector2(80f, -133);
 
         m_BSBG.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 0f;
         m_MOutSideBG.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 0f;
+        m_ShardBtn.gameObject.CheckComnectComponent<CanvasGroup>().alpha = 0f;
 
         m_MOutSideMusicStopBtn.image.rectTransform.GetChild(0).gameObject.SetActive(true);
         m_MOutSideMusicStopBtn.image.rectTransform.GetChild(1).gameObject.SetActive(false);
@@ -121,6 +127,7 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         base.BreakPoint(_isBreak, _BrackType, _GetType);
         m_isActionProcess = _isBreak;
         m_BackSpaceBtn.interactable = _isBreak;
+        //m_ShardBtn.interactable = _isBreak;
         m_MOutSideMusicStopBtn.interactable = _isBreak;
         m_MainScrollRect.enabled = _isBreak ? m_DataMonoMusicICONModules.Count > 4 : false;
         //m_MOutSideCycleSlider.value = 0f;
@@ -144,7 +151,12 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         var GetCG_2 = m_MOutSideBG.gameObject.CheckComnectComponent<CanvasGroup>();
         DOTween.To(() => GetCG_2.alpha, x => GetCG_2.alpha = x, 1f, 0.85f).SetDelay(0.15f).SetEase(Ease.OutSine);
         m_MOutSideBG.DOAnchorPosX(-50, 0.65f).SetDelay(0.15f).SetEase(Ease.OutCirc);
-        
+
+        m_ShardBtn.gameObject.SetActive(true);
+        var GetCG_3 = m_ShardBtn.gameObject.CheckComnectComponent<CanvasGroup>();
+        DOTween.To(() => GetCG_3.alpha, x => GetCG_3.alpha = x, 1f, 0.85f).SetDelay(0.15f).SetEase(Ease.OutSine);
+        m_ShardBtn.image.rectTransform.DOAnchorPosX(-50, 0.65f).SetDelay(0.15f).SetEase(Ease.OutCirc);
+
         int ComplateIDX = 0; int CountIDX = 0; float ApplyDur = 0.15f;
         m_DataMonoMusicICONModules.HForEach(x =>
         {
@@ -158,6 +170,7 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
                 if (ComplateIDX >= m_DataMonoMusicICONModules.Count)
                 {
                     m_MainSoundController.I_CheckSubModuleIsAllCanAction(m_MainController);
+                    //m_ShardBtn.onClick.AddListener(OnClickBackSpaceBtn);
                     m_BackSpaceBtn.onClick.AddListener(OnClickBackSpaceBtn);
                     m_MOutSideMusicStopBtn.onClick.AddListener(OnClickMSideBtn);
                     ContentsSizeFilter.enabled = true;
@@ -182,6 +195,7 @@ public class RequiredSoundGamePopUp : SystemBaseGUIPopUpRequired, I_PopUpPush, I
         bool isComplateUpSide = false, isComplateDownSide = false;
         m_DataMonoMuteModules.HForEach(x => x.gameObject.SetActive(false));
         m_BSBG.DOAnchorPosX(-250f, 0.45f).SetEase(Ease.InBack);
+        m_ShardBtn.image.rectTransform.DOAnchorPosX(250f, 0.45f).SetEase(Ease.InBack);
         m_MOutSideBG.DOAnchorPosX(250f, 0.45f).SetEase(Ease.InBack).OnComplete(() => 
         {
             isComplateUpSide = true;

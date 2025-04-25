@@ -179,7 +179,7 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
                 GamePlaySystem.Instance.ExecuteOutPutSystemBase(SystemInfoType.Test_GUIMB_SoundGameProjectSelectMusic);
             }
         };
-        StartCoroutine(NewProductionEndSoundGameController(_isSubCheck, EndCallBack));
+        StartCoroutine(NewProductionEndSoundGameController(_isSubCheck, EndCallBack, AppliedDataSet));
     }
 
     public override void ForcePlayOrStopOrder(bool _isPlay)
@@ -274,16 +274,42 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
         I_GetSubModule<SoundGaugeSubController>().ElemSinngerOutPutInit();
     }
 
-    IEnumerator NewProductionEndSoundGameController(bool _isNextStage, System.Action _EndCallback)
+    IEnumerator NewProductionEndSoundGameController(bool _isNextStage, 
+    System.Action _EndCallback, I_Data AppliedDataSet = null)
     {
         bool isWaitComplate1 = false, isWaitComplate2 = false;
-        var MainParticle = pp_MainMapModuleByVersion.GetChild(1).GetComponent<ParticleSystem>();
-        MainParticle.Stop();
-        InitAudioBaouns(false);
-        I_GetSubModule<CameraProductionSubController>().CamFullScreenActionMat(0f);
-        m_GetCurrSinngerSubControllers.ForEach(x => { if (x.pp_isOn) x.DeleteThisSound(); });
+        if (!_isNextStage)
+        {
+            InitAudioBaouns(false);
+            m_GetCurrSinngerSubControllers.ForEach(x => { if (x.pp_isOn) x.DeleteThisSound(); });
+            pp_MainMapModuleByVersion.GetChild(1).GetComponent<ParticleSystem>().Stop();
+            I_GetSubModule<CameraProductionSubController>().CamFullScreenActionMat(0f);
+            m_WPSticksEqulizer.ActionBeforeOutPutProduction(false, () => isWaitComplate2 = true);
+        }
+        else
+        {
+            //카메라에 존재하는 깨지는 쉐이더 발동할 수 있도록
+            //HDR이 더 커지면서 가운데서 켜지는 노란 플레시 효과 이후에 팝업으로 넘어갈 수 있도록
+            //팝업은 기존것에서 걍 켜지게만 진행
+            I_GetSubModule<SoundGaugeSubController>().SusseceEndGameEffect((_ApplyMainTr, _ApplyCallBack) => 
+            {
+                GamePlaySystem.Instance.ExecutePopUpStack<TOCEndBreakePopUp>().
+                InitTOCEndBrakePopUp(_ApplyMainTr, 20, _ApplyCallBack, () => 
+                {
+                    var GetCG = GamePlaySystem.Instance.testpp_AllIncludedGUIPanel.gameObject.CheckComnectComponent<CanvasGroup>();
+                    GetCG.alpha = 0f; GetCG.transform.GetChild(0).gameObject.SetActive(true);
+                    DOTween.To(() => GetCG.alpha, x => GetCG.alpha = x, 1f, 0.4f).SetEase(Ease.InSine).OnComplete(() =>
+                    {
+
+                        DOTween.To(() => GetCG.alpha, x => GetCG.alpha = x, 0f, 0.4f).SetEase(Ease.InSine);
+                    });
+                });
+                GamePlaySystem.Instance.MainPopUpPush<TOCEndBreakePopUp>();
+            });
+            //pp_MainMapModuleByVersion.GetChild(0).
+        }
+        //끝나는건 그대로기 때문에 다음대입때 활용할 수 있도록 수정할것
         GamePlaySystem.Instance.MainPopUpPop<RequiredSoundGamePopUp>(() => isWaitComplate1 = true);
-        m_WPSticksEqulizer.ActionBeforeOutPutProduction(false, () => isWaitComplate2 = true);
         yield return new WaitUntil(() => isWaitComplate1 && isWaitComplate2);
         _EndCallback?.Invoke();
     }
@@ -371,7 +397,7 @@ public class SoundGameController : ControllerBase, I_SubModulesCollection, I_Own
     private void InitAudioBaouns(bool _isAdd, AlbumInfo _CurrAlbumInfo = null, System.Action _EndCallBack = null)
     {
         if (_isAdd) m_CurrAudioASinfo = Appinstance.Instance.ms_AudioManager.PlaySound(false,
-        _CurrAlbumInfo.m_MainClipBGM.s_isLoop, _CurrAlbumInfo.m_MainClipBGM.s_ItemName, 0.6f, 
+        _CurrAlbumInfo.m_MainClipBGM.s_isLoop, _CurrAlbumInfo.m_MainClipBGM.s_ItemName, 0.2f, 
         AudioType.BGM, _CurrAlbumInfo.m_MainClipBGM.s_AudioClipsInfo[0], this);
 
         var ApplyMixerCon = I_GetSubModule<AudioMixVisualizeSubController>();

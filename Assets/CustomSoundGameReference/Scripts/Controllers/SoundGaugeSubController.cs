@@ -25,6 +25,7 @@ public class SoundGaugeSubController : SubModuleControllerBase
     private Sequence m_SeqMask, m_SeqMaskComplate;
     private SoundGameController m_SoundMainController;
     private ShaderApplyRatioFloatPowerModule m_MainICONPowerModule;
+    private SpriteRenderer m_MainICONSubSR;
 
     public float pp_GaugeValue { get; private set; }
 
@@ -37,6 +38,7 @@ public class SoundGaugeSubController : SubModuleControllerBase
             var GetGaugeInfo = (SubConParamByGauge)GetPartParms[0];
             m_MainICONPowerModule = GetGaugeInfo.s_ShaderFloatPowerModule;
             m_MainICONPowerModule.Initlization(0, 1, "_ICEAgePower"); //원래는 정보 데이터도 따로 들고 있어야함
+            m_MainICONSubSR = m_MainICONPowerModule.transform.ChildLinearStuctureSearch<SpriteRenderer>()[0];
         }
 
         m_SoundMainController = m_MainController as SoundGameController;
@@ -47,6 +49,8 @@ public class SoundGaugeSubController : SubModuleControllerBase
         GetTrs.HForEach(x => x.gameObject.SetActive(false));
         return null;
     }
+
+    #region Main System Public Functions (**Main Process**)
 
     public override void BreakPoint(bool _isBreak, SubModuleBreakType _BrackType = SubModuleBreakType.BreakAll, Type _GetType = null)
     {
@@ -76,6 +80,10 @@ public class SoundGaugeSubController : SubModuleControllerBase
         });
     }
 
+    #endregion
+
+    #region Main System Function
+
     //SoundGame에서 데이터를 가지고 있는 함수에서 호출할 수 있도록
     public void ApplySoundStack(bool _isAdd)
     {
@@ -85,7 +93,7 @@ public class SoundGaugeSubController : SubModuleControllerBase
         m_isUpdateSliderValue =
         m_SoundMainController.PlayingNow();
     }
-
+    //게이지에 추가한 Sub Glow
     private void MaskTweening()
     {
         m_SeqMaskComplate.ResetSequce(true); m_SeqMask.ResetSequce(true); 
@@ -105,15 +113,65 @@ public class SoundGaugeSubController : SubModuleControllerBase
         if (pp_GaugeValue >= 1f)
         {
             //게임 종료 => 웹뷰 띄우기
-            pp_GaugeValue = 0f; //테스트 용도
+            Appinstance.Instance.ms_GamePlayManager.
+            ExecuteChangeAllGameControll(GamePlayManager.GamePlayType.EndReady, true);
+            if(m_isTestMode) pp_GaugeValue = 0f; //테스트 용도
         }
-
+        //pp_GaugeValue => 0 ~ 1 까지
         m_MainICONPowerModule.ActionForMat(pp_GaugeValue, new CamFSMatRatioBuffer(0f, 1f));
         m_CamProductionCon.CamFullScreenActionMat(pp_GaugeValue, new CamFSMatRatioBuffer(0f, 1f));
         var GetLS = m_SliderTRVer.transform.localScale;
         GetLS.y = pp_GaugeValue;
         m_SliderTRVer.transform.localScale = GetLS;
     }
+
+    #endregion
+
+    #region Sub System Functions (**End Effect Reference**)
+
+    public void SusseceEndGameEffect(System.Action<Transform, System.Action<int, int>> _EndCallBack)
+    {
+        if ((!Appinstance.Instance.ms_GamePlayManager.
+        HasCurrentState(GamePlayManager.GamePlayType.EndReady)).
+        HDebug("오르지 종료 스택에서만 발동 가능합니다.!", Helper.HDType.Error)) return;
+        var GetMainTR = m_MainICONPowerModule.transform.parent;
+        var OGPos = GetMainTR.position;
+        var OGScale = GetMainTR.localScale;
+        GetMainTR.DOScale(OGScale * 1.5f, 0.65f).SetEase(Ease.OutExpo);
+        GetMainTR.DOMoveX(-1.2f, 0.35f).SetEase(Ease.Linear).OnComplete(() =>
+        GetMainTR.DOMoveX(0f, 0.35f).SetEase(Ease.OutBack).OnComplete(() => 
+        _EndCallBack?.Invoke(GetMainTR, CrushMainBGEffect)));
+    }
+
+    private void CrushMainBGEffect(int _CurrValue, int _MaxValue)
+    {
+        float RatioValue = (float)_CurrValue / (float)_MaxValue;
+        #region 이전 모든 값에 대입하는 로직 (사용안할시 삭제할것)
+        //const float targetMin = 0.75f, targetMax = 3f;
+        //#region Ratio Calculate
+        //if (_GetBuffer != null)
+        //{
+        //    var currRatio = _GetBuffer.Value;
+        //    float clampedValue = Mathf.Clamp(
+        //    _Value, currRatio.s_MinValue, currRatio.s_MaxValue);
+
+        //    // 원본 범위에서의 비율 계산 (0~1)
+        //    float ratio = (clampedValue - currRatio.s_MinValue) /
+        //    (currRatio.s_MaxValue - currRatio.s_MinValue);
+
+        //    // 같은 비율을 타겟 범위에 적용
+        //    _Value = targetMin + (ratio * (targetMax - targetMin));
+        //}
+        //#endregion
+        //_Value = Mathf.Abs(_Value - targetMax);
+        //if (m_CamMatSeq != null) m_CamMatSeq.ResetSequce();
+        //float ClampValue = Mathf.Clamp(_Value, targetMin, targetMax);
+        //m_EffectMat.SetFloat("_ICEAgePower", ClampValue);
+        #endregion
+        m_MainICONSubSR.material.SetFloat("_PowerByCrushAlpha", RatioValue);
+    }
+
+    #endregion
 
     public override void ProcessUpdate()
     {

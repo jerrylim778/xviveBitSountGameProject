@@ -377,6 +377,8 @@ public class GamePlayManager : MonoBehaviour, I_StartControllerBase, I_CheckInit
         #endregion
         if ((_CurrType != GamePlayType.StartingSet && !pp_isActionToPlay).HDebug(
         "아직 유저가 실행하는 모든 상황이 끝나질 않았습니다.!", Helper.HDType.Error)) return;
+
+        pp_GamePlayTypeNow = _CurrType;
         switch (pp_RuningSceneTypeNow)
         {
             case SetSceneType.IntroScene or SetSceneType.TitleScene or SetSceneType.TestModeScene:
@@ -384,7 +386,7 @@ public class GamePlayManager : MonoBehaviour, I_StartControllerBase, I_CheckInit
             case SetSceneType.InGameScene or SetSceneType.SoundGameScene:
                 InGameController(_CurrType, _SetActionSubSystems, _SetData); break;
         }
-        pp_GamePlayTypeNow = _CurrType; //그전값을 비교하는 타입이 존재하기에 뒤에서 전체 상태를 변경함
+        //pp_GamePlayTypeNow = _CurrType; //그전값을 비교하는 타입이 존재하기에 뒤에서 전체 상태를 변경함
     }
 
     public void StartChangeSceneProcess(
